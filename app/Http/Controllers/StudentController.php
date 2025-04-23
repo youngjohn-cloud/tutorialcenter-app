@@ -51,7 +51,7 @@ class StudentController extends Controller
             $student->lastname = $request->input('lastname');
             $student->email = $request->input('email');
             $student->phone = $request->input('phone');
-            $student->password = $request->input('password');
+            $student->password = Hash::make($request->input('password'));
             $student->gender = $request->input('gender');
             $student->profile_picture = $request->input('profile_picture');
             $student->date_of_birth = $request->input('date_of_birth');
@@ -59,6 +59,7 @@ class StudentController extends Controller
             $student->home_address = $request->input('home_address');
             $student->department = $request->input('department');
             $student->guardians_ids = $request->input('guardians_ids');
+            $student->save();
     
             return response()->json(['student' => $student], 201);
         } catch (\Exception $e) {

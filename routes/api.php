@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\GuardianController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\StudentController;
@@ -19,4 +20,13 @@ Route::prefix('students')->group(function () {
 
     // Optionally, login route for student (if needed)
     Route::post('login', [StudentController::class, 'login']); // Login student
+});Route::prefix('guardians')->group(function () {
+    Route::get('/', [GuardianController::class, 'index']);            // List all guardians
+    Route::post('/', [GuardianController::class, 'store']);           // Create a new guardian
+    Route::get('/{guardian}', [GuardianController::class, 'show']);   // Show single guardian
+    Route::put('/{guardian}', [GuardianController::class, 'update']); // Update guardian
+    Route::delete('/{guardian}', [GuardianController::class, 'destroy']); // Delete guardian
+    Route::post('/login', [GuardianController::class, 'login']);      // Guardian login
 });
+
+
