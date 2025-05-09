@@ -31,7 +31,9 @@ class StudentController extends Controller
             'department' => 'nullable|string',
             'guardians_ids' => 'nullable|array',
         ]);
-
+        if (empty($request->input('email')) && empty($request->input('phone'))) {
+            return response()->json(['errors' => "Please enter your email or phone number"], 400);
+        }
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 400);
         }
