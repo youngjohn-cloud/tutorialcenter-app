@@ -34,6 +34,7 @@ class Student extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'phone_verified_at' => 'datetime',
+        'is_phone_verified' => 'boolean',
         'date_of_birth' => 'date',
         'guardians_ids' => 'array',
     ];

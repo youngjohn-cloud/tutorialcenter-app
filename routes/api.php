@@ -1,14 +1,9 @@
 <?php
 
-use App\Http\Controllers\GuardianController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\StudentController;
-
-// Route::get('/user', function (Request $request) {
-//     return $request->user();
-// })->middleware('auth:sanctum');
-// use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\GuardianController;
 
 // Student API Routes
 Route::prefix('students')->group(function () {
@@ -20,7 +15,22 @@ Route::prefix('students')->group(function () {
 
     // Optionally, login route for student (if needed)
     Route::post('login', [StudentController::class, 'login']); // Login student
-});Route::prefix('guardians')->group(function () {
+
+    // Route::get('/verify-email/student/{id}', [StudentController::class, 'verifyEmail']);
+    Route::post('/verify-phone/student', [StudentController::class, 'verifyPhone']);
+
+});
+
+Route::get('/verify-email/{id}', function ($id) {
+    $student = \App\Models\Student::findOrFail($id);
+    $student->email_verified_at = now();
+    $student->save();
+
+    return response()->json(['message' => 'Email verified successfully']);
+});
+
+
+Route::prefix('guardians')->group(function () {
     Route::get('/', [GuardianController::class, 'index']);            // List all guardians
     Route::post('/', [GuardianController::class, 'store']);           // Create a new guardian
     Route::get('/{guardian}', [GuardianController::class, 'show']);   // Show single guardian
