@@ -12,6 +12,7 @@
     <p>Please click the link below to verify your email:</p>
 
     <p><a href="{{ $url }}" target="_blank">{{ $url }}</a></p>
+    <p>Email Verification Code: {{ $student->verification_code }}</p>
 
     <p>If you did not initiate this request, you can safely ignore this message.</p>
 
