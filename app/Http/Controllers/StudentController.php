@@ -31,9 +31,7 @@ class StudentController extends Controller
             'department' => 'nullable|string',
             'guardians_ids' => 'nullable|array',
         ]);
-        // if (empty($request->input('email')) && empty($request->input('phone'))) {
-        //     return response()->json(['errors' => "Please enter your email or phone number"], 400);
-        // }
+
         if (!$request->email && !$request->phone) {
             return response()->json([
                 'message' => 'Email or Phone is required.'
@@ -43,7 +41,6 @@ class StudentController extends Controller
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 400);
         }
-
 
         try {
             $verification_code = rand(100000, 999999);
@@ -65,12 +62,8 @@ class StudentController extends Controller
 
             // Send verification code
             if ($request->email) {
-                // Mail::to($request->email)->send(new StudentEmailVerification($verification_code));
                 Mail::to($student->email)->send(new \App\Mail\StudentEmailVerification($student));
             } else if ($request->phone) {
-                // Send SMS using Twilio/Termii
-                // $this->sendSMS($request->phone, "Your verification code is: $verification_code");
-                // Send SMS and capture response
                 $smsResponse = $termii->sendSms($student->phone, "Your verification code is $verification_code");
 
                 \Log::info('Termii SMS response', [
@@ -80,47 +73,6 @@ class StudentController extends Controller
             }
 
             return response()->json(['message' => 'Verification code sent.'], 201);
-
-            // // Initialize optional response
-            // $smsResponse = null;
-
-            // // Handle email verification
-            // if ($student->email) {
-            //     $student->email_verified_at = null;
-
-            //     // Send verification email
-            //     Mail::to($student->email)->send(new \App\Mail\StudentEmailVerification($student));
-            // }
-
-            // // Handle phone verification
-            // if ($student->phone) {
-            //     $code = rand(100000, 999999);
-            //     $student->phone_verification_code = $code;
-            //     $student->is_phone_verified = false;
-
-            //     // Send SMS and capture response
-            //     $smsResponse = $termii->sendSms($student->phone, "Your verification code is $code");
-
-            //     \Log::info('Termii SMS response', [
-            //         'phone' => $student->phone,
-            //         'response' => $smsResponse
-            //     ]);
-            // }
-
-
-            // // Prepare response
-            // $responsePayload = [
-            //     'student' => $student,
-            //     'message' => $student->email
-            //         ? 'Verification email sent'
-            //         : 'Verification code sent to phone',
-            // ];
-
-            // if ($smsResponse) {
-            //     $responsePayload['sms_response'] = $smsResponse;
-            // }
-
-            // return response()->json($responsePayload, 201);
 
         } catch (\Exception $e) {
             return response()->json(['errors' => $e->getMessage()], 500);
@@ -132,46 +84,55 @@ class StudentController extends Controller
 
     public function verify(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(),[
             'identifier' => 'required', // email or phone
             'code' => 'required',
         ]);
+        // $request->validate([
+        //     'identifier' => 'required', // email or phone
+        //     'code' => 'required',
+        // ]);
 
-        $user = Student::where('email', $request->identifier)
-            ->orWhere('phone', $request->identifier)
-            ->first();
-
-        if (!$user || $user->verification_code !== $request->code) {
-            return response()->json(['message' => 'Invalid code.'], 400);
+        if($validator->fails()) {
+            return response()->json([
+                'errors' => $validator->errors()
+            ], 400);
         }
 
-        if ($user->email && $user->email === $request->identifier) {
-            $user->email_verified_at = now();
+        try {
+            $user = Student::where('email', $request->identifier)
+                ->orWhere('phone', $request->identifier)
+                ->first();
+    
+            if (!$user || $user->verification_code !== $request->code) {
+                return response()->json(['message' => 'Verification Failed'], 400);
+            }
+    
+            if ($user->email && $user->email === $request->identifier) {
+                Student::where('email', $user->email)->update([
+                    'email_verified_at' => now(),
+                    'verification_code' => null,
+                ]);
+            }
+    
+            if ($user->phone && $user->phone === $request->identifier) {
+                Student::where('phone', $user->email)->update([
+                    'email_verified_at' => now(),
+                    'verification_code' => null,
+                ]);
+            }
+            $user->save();
+    
+            return response()->json([
+                'message' => 'Verified successfully.'
+            ],200);
+        } catch(\Exception $error) {
+            return response()->json([
+                'errors' => $error,
+            ], 500);
         }
 
-        if ($user->phone && $user->phone === $request->identifier) {
-            $user->phone_verified_at = now();
-        }
-
-        $user->verification_code = null;
-        $user->save();
-
-        return response()->json([
-            'message' => 'Verified successfully.'
-        ],200);
     }
-
-    // public function verifyEmail($id)
-    // {
-    //     // $student = Student::findOrFail($id, 'student_id');
-    //     $student = Student::where('student_id', $id)->first();
-    //     $student->email_verified_at = now();
-    //     $student->save();
-    //     return redirect('/');
-    //     // return redirect('/student/dashboard');
-    // }
-
-
 
     public function sendPhoneVerification(Request $request, TermiiService $termii)
     {
