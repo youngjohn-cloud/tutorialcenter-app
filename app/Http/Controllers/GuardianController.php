@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Guardian;
 use Illuminate\Http\Request;
+use App\Services\TermiiService;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
@@ -23,7 +25,6 @@ class GuardianController extends Controller
      */
     public function store(Request $request)
     {
-        // return "Hello";
         // Validate incoming data
         $validator = Validator::make($request->all(), [
             'firstname' => 'required|string|max:255',
@@ -36,7 +37,6 @@ class GuardianController extends Controller
             'date_of_birth' => 'nullable|date',
             'location' => 'nullable|string',
             'home_address' => 'nullable|string',
-            'status' => 'nullable|in:active,inactive,disable',
             'students_ids' => 'nullable|array',
         ]);
 
@@ -44,8 +44,23 @@ class GuardianController extends Controller
             return response()->json(['errors' => $validator->errors()], 400);
         }
 
+        // Making sure student provide their email or phone number when registering
+        if (!$request->email && !$request->phone) {
+            return response()->json([
+                'message' => 'Email or Phone is required.'
+            ], 422);
+        }
+
+        // Outputing error while registing when any occures
+        if ($validator->fails()) {
+            return response()->json([
+                'errors' => $validator->errors()
+            ], 400);
+        }
+
         // Create guardian
         try {
+            $verification_code = rand(100000, 999999);
             $guardian = new Guardian;
             $guardian->firstname = $request->input('firstname');
             $guardian->lastname = $request->input('lastname');
@@ -57,14 +72,76 @@ class GuardianController extends Controller
             $guardian->date_of_birth = $request->input('date_of_birth');
             $guardian->location = $request->input('location');
             $guardian->home_address = $request->input('home_address');
-            $guardian->status = $request->input('status');
             $guardian->students_ids = $request->input('students_ids');
+            $guardian->verification_code = $verification_code;
             $guardian->save();
 
-            return response()->json(['guardian' => $guardian], 201);
+            // Send verification code
+            if ($request->email) {
+                Mail::to($guardian->email)->send(new \App\Mail\GuardianEmailVerification($guardian));
+            } else if ($request->phone) {
+                // $smsResponse = $termii->sendSms($guardian->phone, "Your verification code is $verification_code");
+
+                \Log::info('Termii SMS response', [
+                    'phone' => $guardian->phone,
+                    // 'response' => $smsResponse
+                ]);
+            }
+
+            return response()->json([
+                'message' => 'Verification code sent.',
+                'guardian' => $guardian,
+            ], 201);
         } catch (\Exception $e) {
             return response()->json(['errors' => $e->getMessage()], 500);
         }
+    }
+
+    // Email Verification
+    public function verify(Request $request)
+    {
+        $validator = Validator::make($request->all(),[
+            'identifier' => 'required', // email or phone
+            'code' => 'required',
+        ]);
+
+        if($validator->fails()) {
+            return response()->json([
+                'errors' => $validator->errors()
+            ], 400);
+        }
+
+        try {
+            $user = Guardian::where('email', $request->identifier)
+                ->orWhere('phone', $request->identifier)
+                ->first();
+            if (!$user || $user->verification_code !== $request->code) {
+                return response()->json(['message' => 'Verification Failed'], 400);
+            }
+    
+            if ($user->email && $user->email === $request->identifier) {
+                Guardian::where('email', $user->email)->update([
+                    'email_verified_at' => now(),
+                    'verification_code' => null,
+                ]);
+            }
+            if ($user->phone && $user->phone === $request->identifier) {
+                Guardian::where('phone', $user->email)->update([
+                    'email_verified_at' => now(),
+                    'verification_code' => null,
+                ]);
+            }
+            $user->save();
+    
+            return response()->json([
+                'message' => 'Verified successfully.'
+            ],200);
+        } catch(\Exception $error) {
+            return response()->json([
+                'errors' => $error,
+            ], 500);
+        }
+
     }
 
     /**

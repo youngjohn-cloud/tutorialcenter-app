@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Student;
-use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Services\TermiiService;
 use Illuminate\Support\Facades\Mail;
@@ -17,6 +16,7 @@ class StudentController extends Controller
      */
     public function store(Request $request, TermiiService $termii)
     {
+        // Validation Student Registration
         $validator = Validator::make($request->all(), [
             'firstname' => 'required|string|max:255',
             'lastname' => 'required|string|max:255',
@@ -32,14 +32,18 @@ class StudentController extends Controller
             'guardians_ids' => 'nullable|array',
         ]);
 
+        // Making sure student provide their email or phone number when registering
         if (!$request->email && !$request->phone) {
             return response()->json([
                 'message' => 'Email or Phone is required.'
             ], 422);
         }
 
+        // Outputing error while registing when any occures
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 400);
+            return response()->json([
+                'errors' => $validator->errors()
+            ], 400);
         }
 
         try {
@@ -72,26 +76,25 @@ class StudentController extends Controller
                 ]);
             }
 
-            return response()->json(['message' => 'Verification code sent.'], 201);
-
+            return response()->json([
+                'message' => 'Verification code sent.',
+                'student' => $student,
+            ], 201);
         } catch (\Exception $e) {
-            return response()->json(['errors' => $e->getMessage()], 500);
+            return response()->json([
+                'errors' => $e->getMessage()
+            ], 500);
         }
     }
 
 
     // Email Verification
-
     public function verify(Request $request)
     {
         $validator = Validator::make($request->all(),[
             'identifier' => 'required', // email or phone
             'code' => 'required',
         ]);
-        // $request->validate([
-        //     'identifier' => 'required', // email or phone
-        //     'code' => 'required',
-        // ]);
 
         if($validator->fails()) {
             return response()->json([
@@ -103,7 +106,6 @@ class StudentController extends Controller
             $user = Student::where('email', $request->identifier)
                 ->orWhere('phone', $request->identifier)
                 ->first();
-    
             if (!$user || $user->verification_code !== $request->code) {
                 return response()->json(['message' => 'Verification Failed'], 400);
             }
@@ -114,7 +116,6 @@ class StudentController extends Controller
                     'verification_code' => null,
                 ]);
             }
-    
             if ($user->phone && $user->phone === $request->identifier) {
                 Student::where('phone', $user->email)->update([
                     'email_verified_at' => now(),

@@ -10,8 +10,6 @@ class Guardian extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $primaryKey = 'guardian_id'; // Custom primary key
-
     protected $fillable = [
         'firstname',
         'lastname',
@@ -23,10 +21,14 @@ class Guardian extends Model
         'date_of_birth',
         'email_verified_at',
         'phone_verified_at',
+        'verification_code',
         'location',
         'home_address',
-        'status',
         'students_ids',
+    ];
+    
+    protected $hidden = [
+        'password',
     ];
 
     protected $casts = [
@@ -36,7 +38,14 @@ class Guardian extends Model
         'students_ids' => 'array',
     ];
 
-    protected $hidden = [
-        'password',
-    ];
+    /**
+     * Automatically hash password before saving
+     */
+    public function setPasswordAttribute($value)
+    {
+        if ($value) {
+            $this->attributes['password'] = bcrypt($value);
+        }
+    }
+
 }

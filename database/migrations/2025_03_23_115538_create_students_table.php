@@ -25,10 +25,6 @@ return new class extends Migration {
             $table->timestamp('email_verified_at')->nullable();
             $table->timestamp('phone_verified_at')->nullable();
             $table->string('verification_code')->nullable();
-            // $table->timestamp('email_verified_at')->nullable();
-            // $table->timestamp('phone_verified_at')->nullable();
-            // $table->string('phone_verification_code')->nullable(); // <- Add this line
-            // $table->boolean('is_phone_verified')->default(false);   // <- Add this line
 
             $table->string('location')->nullable();
             $table->text('home_address')->nullable();
