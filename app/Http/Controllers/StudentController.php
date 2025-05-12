@@ -87,7 +87,6 @@ class StudentController extends Controller
         }
     }
 
-
     // Email Verification
     public function verify(Request $request)
     {
@@ -106,8 +105,14 @@ class StudentController extends Controller
             $user = Student::where('email', $request->identifier)
                 ->orWhere('phone', $request->identifier)
                 ->first();
-            if (!$user || $user->verification_code !== $request->code) {
-                return response()->json(['message' => 'Verification Failed'], 400);
+            if (!$user) {
+                return response()->json([
+                    'message' => $request->identifier . ' do not exist',
+                ], 400);
+            } else if ($user->verification_code !== $request->code) {
+                return response()->json([
+                    'message' => $request->code . ' is not valid',
+                ], 400);
             }
     
             if ($user->email && $user->email === $request->identifier) {
@@ -117,7 +122,7 @@ class StudentController extends Controller
                 ]);
             }
             if ($user->phone && $user->phone === $request->identifier) {
-                Student::where('phone', $user->email)->update([
+                Student::where('phone', $user->phone)->update([
                     'email_verified_at' => now(),
                     'verification_code' => null,
                 ]);
@@ -125,7 +130,7 @@ class StudentController extends Controller
             $user->save();
     
             return response()->json([
-                'message' => 'Verified successfully.'
+                'message' => 'Verified successfully.',
             ],200);
         } catch(\Exception $error) {
             return response()->json([
