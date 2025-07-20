@@ -16,6 +16,7 @@ Route::prefix('students')->group(function () {
 
 
     Route::post('login', [StudentController::class, 'login']); // Login student
+    Route::post('/enroll', [StudentController::class, 'enroll']); //student enroll in a course
 
 });
 
