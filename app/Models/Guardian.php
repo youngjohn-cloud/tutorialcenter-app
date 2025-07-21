@@ -25,8 +25,9 @@ class Guardian extends Model
         'location',
         'home_address',
         'students_ids',
+        'role'
     ];
-    
+
     protected $hidden = [
         'password',
     ];
@@ -41,11 +42,11 @@ class Guardian extends Model
     /**
      * Automatically hash password before saving
      */
-    public function setPasswordAttribute($value)
-    {
-        if ($value) {
-            $this->attributes['password'] = bcrypt($value);
-        }
-    }
+    // public function setPasswordAttribute($value)
+    // {
+    //     if ($value) {
+    //         $this->attributes['password'] = bcrypt($value);
+    //     }
+    // }
 
 }

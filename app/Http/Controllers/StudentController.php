@@ -70,10 +70,10 @@ class StudentController extends Controller
             } else if ($request->phone) {
                 $smsResponse = $termii->sendSms($student->phone, "Your verification code is $verification_code");
 
-                \Log::info('Termii SMS response', [
-                    'phone' => $student->phone,
-                    'response' => $smsResponse
-                ]);
+                // \Log::info('Termii SMS response', [
+                //     'phone' => $student->phone,
+                //     'response' => $smsResponse
+                // ]);
             }
 
             return response()->json([
@@ -90,12 +90,12 @@ class StudentController extends Controller
     // Email Verification
     public function verify(Request $request)
     {
-        $validator = Validator::make($request->all(),[
+        $validator = Validator::make($request->all(), [
             'identifier' => 'required', // email or phone
             'code' => 'required',
         ]);
 
-        if($validator->fails()) {
+        if ($validator->fails()) {
             return response()->json([
                 'errors' => $validator->errors()
             ], 400);
@@ -114,7 +114,7 @@ class StudentController extends Controller
                     'message' => $request->code . ' is not valid',
                 ], 400);
             }
-    
+
             if ($user->email && $user->email === $request->identifier) {
                 Student::where('email', $user->email)->update([
                     'email_verified_at' => now(),
@@ -128,16 +128,15 @@ class StudentController extends Controller
                 ]);
             }
             $user->save();
-    
+
             return response()->json([
                 'message' => 'Verified successfully.',
-            ],200);
-        } catch(\Exception $error) {
+            ], 200);
+        } catch (\Exception $error) {
             return response()->json([
                 'errors' => $error,
             ], 500);
         }
-
     }
 
     public function sendPhoneVerification(Request $request, TermiiService $termii)
@@ -253,8 +252,6 @@ class StudentController extends Controller
         }
 
         // Generate token or handle authentication as needed
-        return response()->json(['message' => 'Login successful', 'student' => $student]);
+        return response()->json(['message' => 'Login successful', 'data' => $student]);
     }
 }
-
-

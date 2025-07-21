@@ -27,10 +27,10 @@ return new class extends Migration
             $table->string('verification_code')->nullable();
             $table->text('home_address')->nullable();
             $table->json('students_ids')->nullable();
+            $table->string('role')->default('guardian'); // Default role set to 'guardian'
             $table->softDeletes();
             $table->timestamps();
         });
-        
     }
 
     /**

@@ -82,10 +82,10 @@ class GuardianController extends Controller
             } else if ($request->phone) {
                 // $smsResponse = $termii->sendSms($guardian->phone, "Your verification code is $verification_code");
 
-                \Log::info('Termii SMS response', [
-                    'phone' => $guardian->phone,
-                    // 'response' => $smsResponse
-                ]);
+                // \Log::info('Termii SMS response', [
+                //     'phone' => $guardian->phone,
+                //     // 'response' => $smsResponse
+                // ]);
             }
 
             return response()->json([
@@ -100,12 +100,12 @@ class GuardianController extends Controller
     // Email Verification
     public function verify(Request $request)
     {
-        $validator = Validator::make($request->all(),[
+        $validator = Validator::make($request->all(), [
             'identifier' => 'required', // email or phone
             'code' => 'required',
         ]);
 
-        if($validator->fails()) {
+        if ($validator->fails()) {
             return response()->json([
                 'errors' => $validator->errors()
             ], 400);
@@ -118,7 +118,7 @@ class GuardianController extends Controller
             if (!$user || $user->verification_code !== $request->code) {
                 return response()->json(['message' => 'Verification Failed'], 400);
             }
-    
+
             if ($user->email && $user->email === $request->identifier) {
                 Guardian::where('email', $user->email)->update([
                     'email_verified_at' => now(),
@@ -132,16 +132,15 @@ class GuardianController extends Controller
                 ]);
             }
             $user->save();
-    
+
             return response()->json([
                 'message' => 'Verified successfully.'
-            ],200);
-        } catch(\Exception $error) {
+            ], 200);
+        } catch (\Exception $error) {
             return response()->json([
                 'errors' => $error,
             ], 500);
         }
-
     }
 
     /**
@@ -207,6 +206,6 @@ class GuardianController extends Controller
             return response()->json(['message' => 'Invalid credentials'], 401);
         }
 
-        return response()->json(['message' => 'Login successful', 'guardian' => $guardian]);
+        return response()->json(['message' => 'Login successful', 'data' => $guardian]);
     }
 }

@@ -30,6 +30,7 @@ return new class extends Migration {
             $table->text('home_address')->nullable();
             $table->string('department')->nullable();
             $table->json('guardians_ids')->nullable();
+            $table->string('role')->default('student'); // Default role set to 'student'
 
             $table->softDeletes();
             $table->timestamps();
