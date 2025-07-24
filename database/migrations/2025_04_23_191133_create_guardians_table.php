@@ -21,13 +21,14 @@ return new class extends Migration
             $table->string('phone')->unique()->nullable();
             $table->string('password');
 
-            $table->enum('gender', ['Male', 'Female', 'Others'])->default('Female');
+            $table->enum('gender', ['Male', 'Female', 'Others'])->nullable()->default('Female');
             $table->string('profile_picture')->nullable();
             $table->date('date_of_birth')->nullable();
 
             // Verification fields
-            $table->string('email_verification')->nullable();
-            $table->string('phone_verification')->nullable();
+            $table->string('email_verified_at')->nullable();
+            $table->string('phone_verified_at')->nullable();
+            $table->string('verification_code')->nullable();
             $table->boolean('verified')->default(false);
 
             // Status
