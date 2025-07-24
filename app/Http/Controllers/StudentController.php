@@ -91,12 +91,12 @@ class StudentController extends Controller
     // Email Verification
     public function verify(Request $request)
     {
-        $validator = Validator::make($request->all(),[
+        $validator = Validator::make($request->all(), [
             'identifier' => 'required', // email or phone
             'code' => 'required',
         ]);
 
-        if($validator->fails()) {
+        if ($validator->fails()) {
             return response()->json([
                 'errors' => $validator->errors()
             ], 400);
@@ -115,7 +115,7 @@ class StudentController extends Controller
                     'message' => $request->code . ' is not valid',
                 ], 400);
             }
-    
+
             if ($user->email && $user->email === $request->identifier) {
                 Student::where('email', $user->email)->update([
                     'email_verified_at' => now(),
@@ -129,11 +129,11 @@ class StudentController extends Controller
                 ]);
             }
             $user->save();
-    
+
             return response()->json([
                 'message' => 'Verified successfully.',
-            ],200);
-        } catch(\Exception $error) {
+            ], 200);
+        } catch (\Exception $error) {
             return response()->json([
                 'errors' => $error,
             ], 500);
@@ -221,10 +221,24 @@ class StudentController extends Controller
             'guardians_ids' => 'nullable|array',
         ]);
 
-        // Update student
-        $student->update($data);
+        try {
+            // Update student
+            $student->update($data);
+            return response()->json(
+                [
+                    'student' => $student,
+                    'message' => 'Student updated successfully',
+                ],
+                200
+            );
 
-        return response()->json($student);
+        } catch (\Exception $error) {
+            return response()->json([
+                'errors' => $error->getMessage(),
+                'message' => 'An error occurred while updating the student.',
+            ], 500);
+        }
+
     }
 
     /**
@@ -232,8 +246,16 @@ class StudentController extends Controller
      */
     public function destroy(Student $student)
     {
-        $student->delete();
-        return response()->json(['message' => 'Student deleted successfully']);
+        try {
+
+            $student->delete();
+            return response()->json(['message' => 'Student deleted successfully'], 200);
+        } catch (\Exception $error) {
+            return response()->json([
+                'errors' => $error->getMessage(),
+                'message' => 'An error occurred while deleting the student.',
+            ], 500);
+        }
     }
 
     /**
@@ -243,18 +265,29 @@ class StudentController extends Controller
     public function login(Request $request)
     {
         $data = $request->validate([
-            'email' => 'required|email',
+            'identifier' => 'required|email',
             'password' => 'required|string',
         ]);
 
-        $student = Student::where('email', $data['email'])->first();
-
-        if (!$student || !Hash::check($data['password'], $student->password)) {
-            return response()->json(['message' => 'Invalid credentials'], 401);
+        try {
+            $student = Student::where('email', $data['identifier'])->orWhere('phone', $data['identifier'])->first();
+    
+            // Check if the student has verified their email or phone
+            if ($student->email_verified_at == null && $student->phone_verified_at == null) {
+                return response()->json(['message' => 'Email or Phone not verified'], 401);
+            }
+    
+            // Check if the student exists and the password matches
+            if (!$student || !Hash::check($data['password'], $student->password)) {
+                return response()->json(['message' => 'Invalid credentials'], 401);
+            }
+    
+            // Generate token or handle authentication as needed
+            return response()->json(['message' => 'Login successful', 'student' => $student], 200);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'An error occurred during login', 'error' => $e->getMessage()], 500);
         }
 
-        // Generate token or handle authentication as needed
-        return response()->json(['message' => 'Login successful', 'student' => $student]);
     }
 
 }
