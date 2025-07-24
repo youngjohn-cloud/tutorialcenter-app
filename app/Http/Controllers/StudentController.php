@@ -120,6 +120,7 @@ class StudentController extends Controller
                 Student::where('email', $user->email)->update([
                     'email_verified_at' => now(),
                     'verification_code' => null,
+                    'verified' => 1,
                 ]);
             }
             if ($user->phone && $user->phone === $request->identifier) {
@@ -273,7 +274,7 @@ class StudentController extends Controller
             $student = Student::where('email', $data['identifier'])->orWhere('phone', $data['identifier'])->first();
     
             // Check if the student has verified their email or phone
-            if ($student->email_verified_at == null && $student->phone_verified_at == null) {
+            if ($student->email_verified_at == null && $student->phone_verified_at == null && $student->verified == 0) {
                 return response()->json(['message' => 'Email or Phone not verified'], 401);
             }
     
