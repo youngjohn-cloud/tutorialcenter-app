@@ -13,22 +13,33 @@ return new class extends Migration
     {
         Schema::create('guardians', function (Blueprint $table) {
             $table->id('guardian_id');
+
+            // Guardian Informations
             $table->string('firstname');
             $table->string('lastname');
             $table->string('email')->unique()->nullable();
             $table->string('phone')->unique()->nullable();
             $table->string('password');
-            $table->enum('gender', ['male', 'female', 'others'])->default('female')->nullable();
+
+            $table->enum('gender', ['Male', 'Female', 'Others'])->default('Female');
             $table->string('profile_picture')->nullable();
             $table->date('date_of_birth')->nullable();
-            $table->timestamp('email_verified_at')->nullable();
-            $table->timestamp('phone_verified_at')->nullable();
-            $table->string('location')->nullable();
-            $table->string('verification_code')->nullable();
+
+            // Verification fields
+            $table->string('email_verification')->nullable();
+            $table->string('phone_verification')->nullable();
+            $table->boolean('verified')->default(false);
+
+            // Status
+            $table->enum('status', ['active', 'inactive', 'disable'])->default('inactive');
+            $table->text('location')->nullable();
             $table->text('home_address')->nullable();
+
+            // Relationship to Student
             $table->json('students_ids')->nullable();
+
             $table->softDeletes();
-            $table->timestamps();
+            $table->timestamps(); 
         });
         
     }
