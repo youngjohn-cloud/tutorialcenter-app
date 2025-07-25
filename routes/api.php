@@ -20,8 +20,6 @@ Route::prefix('students')->group(function () {
 
 });
 
-
-
 Route::prefix('guardians')->group(function () {
     Route::get('/', [GuardianController::class, 'index']);            // List all guardians
     Route::post('/register', [GuardianController::class, 'store']);           // Create a new guardian

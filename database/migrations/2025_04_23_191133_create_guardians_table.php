@@ -13,21 +13,32 @@ return new class extends Migration
     {
         Schema::create('guardians', function (Blueprint $table) {
             $table->id('guardian_id');
+
+            // Guardian Informations
             $table->string('firstname');
             $table->string('lastname');
             $table->string('email')->unique()->nullable();
             $table->string('phone')->unique()->nullable();
             $table->string('password');
-            $table->enum('gender', ['male', 'female', 'others'])->default('female')->nullable();
+
+            $table->enum('gender', ['Male', 'Female', 'Others'])->nullable()->default('Female');
             $table->string('profile_picture')->nullable();
             $table->date('date_of_birth')->nullable();
-            $table->timestamp('email_verified_at')->nullable();
-            $table->timestamp('phone_verified_at')->nullable();
-            $table->string('location')->nullable();
+
+            // Verification fields
+            $table->string('email_verified_at')->nullable();
+            $table->string('phone_verified_at')->nullable();
             $table->string('verification_code')->nullable();
+            $table->boolean('verified')->default(false);
+
+            // Status
+            $table->enum('status', ['active', 'inactive', 'disable'])->default('inactive');
+            $table->text('location')->nullable();
             $table->text('home_address')->nullable();
+
+            // Relationship to Student
             $table->json('students_ids')->nullable();
-            $table->string('role')->default('guardian'); // Default role set to 'guardian'
+
             $table->softDeletes();
             $table->timestamps();
         });

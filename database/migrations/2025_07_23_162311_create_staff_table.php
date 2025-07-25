@@ -4,24 +4,26 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
      */
     public function up(): void
     {
-        Schema::create('students', function (Blueprint $table) {
-            $table->id('student_id');
+        Schema::create('staff', function (Blueprint $table) {
+            $table->id('staff_id');
 
-            // Student Informations
+            //staffs information
             $table->string('firstname');
             $table->string('lastname');
             $table->string('email')->unique()->nullable();
             $table->string('phone')->unique()->nullable();
             $table->string('password');
-            $table->enum('gender', ['male', 'female', 'others'])->nullable()->default('female');
+            $table->enum('gender', ['Male', 'Female', 'Others'])->default('Male');
+            $table->enum('staff_role', ['admin','tutor', 'adviser', 'staff'])->default('staff');
             $table->string('profile_picture')->nullable();
-            $table->date('date_of_birth')->nullable();
+            $table->string('date_of_birth')->nullable();
 
             // // Verification fields
             $table->string('email_verified_at')->nullable();
@@ -30,13 +32,9 @@ return new class extends Migration {
             $table->boolean('verified')->default(false);
 
             //status
-            $table->enum('status', ['online', 'away', 'offline', 'disabled'])->default('offline');
-            $table->text('location')->nullable();
-            $table->text('home_address')->nullable();
-            $table->string('department')->nullable()->default(null);
-
-            // Relationship to Guardian
-            $table->json('guardians_ids')->nullable()->default(null);
+            $table->enum('status', ['active', 'inactive', 'disabled'])->default('inactive');
+            $table->string('home_address')->nullable();
+            $table->unsignedBigInteger('indected_by')->nullable();
 
             $table->softDeletes();
             $table->timestamps();
@@ -48,6 +46,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('students');
+        Schema::dropIfExists('staff');
     }
 };

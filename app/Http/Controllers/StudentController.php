@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\StudentEmailVerification;
 use App\Models\Student;
 use Illuminate\Http\Request;
 use App\Services\TermiiService;
@@ -119,6 +120,7 @@ class StudentController extends Controller
                 Student::where('email', $user->email)->update([
                     'email_verified_at' => now(),
                     'verification_code' => null,
+                    'verified' => 1,
                 ]);
             }
             if ($user->phone && $user->phone === $request->identifier) {
@@ -219,10 +221,22 @@ class StudentController extends Controller
             'guardians_ids' => 'nullable|array',
         ]);
 
-        // Update student
-        $student->update($data);
-
-        return response()->json($student);
+        try {
+            // Update student
+            $student->update($data);
+            return response()->json(
+                [
+                    'student' => $student,
+                    'message' => 'Student updated successfully',
+                ],
+                200
+            );
+        } catch (\Exception $error) {
+            return response()->json([
+                'errors' => $error->getMessage(),
+                'message' => 'An error occurred while updating the student.',
+            ], 500);
+        }
     }
 
     /**
@@ -230,8 +244,16 @@ class StudentController extends Controller
      */
     public function destroy(Student $student)
     {
-        $student->delete();
-        return response()->json(['message' => 'Student deleted successfully']);
+        try {
+
+            $student->delete();
+            return response()->json(['message' => 'Student deleted successfully'], 200);
+        } catch (\Exception $error) {
+            return response()->json([
+                'errors' => $error->getMessage(),
+                'message' => 'An error occurred while deleting the student.',
+            ], 500);
+        }
     }
 
     /**
@@ -241,17 +263,27 @@ class StudentController extends Controller
     public function login(Request $request)
     {
         $data = $request->validate([
-            'email' => 'required|email',
+            'identifier' => 'required|email',
             'password' => 'required|string',
         ]);
 
-        $student = Student::where('email', $data['email'])->first();
+        try {
+            $student = Student::where('email', $data['identifier'])->orWhere('phone', $data['identifier'])->first();
 
-        if (!$student || !Hash::check($data['password'], $student->password)) {
-            return response()->json(['message' => 'Invalid credentials'], 401);
+            // Check if the student has verified their email or phone
+            if ($student->email_verified_at == null && $student->phone_verified_at == null && $student->verified == 0) {
+                return response()->json(['message' => 'Email or Phone not verified'], 401);
+            }
+
+            // Check if the student exists and the password matches
+            if (!$student || !Hash::check($data['password'], $student->password)) {
+                return response()->json(['message' => 'Invalid credentials'], 401);
+            }
+
+            // Generate token or handle authentication as needed
+            return response()->json(['message' => 'Login successful', 'student' => $student], 200);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'An error occurred during login', 'error' => $e->getMessage()], 500);
         }
-
-        // Generate token or handle authentication as needed
-        return response()->json(['message' => 'Login successful', 'data' => $student]);
     }
 }

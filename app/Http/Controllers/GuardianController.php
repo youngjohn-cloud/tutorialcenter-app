@@ -11,9 +11,6 @@ use Illuminate\Support\Facades\Validator;
 
 class GuardianController extends Controller
 {
-    /**
-     * Display a listing of the guardians.
-     */
     public function index()
     {
         $guardians = Guardian::all();
@@ -206,6 +203,6 @@ class GuardianController extends Controller
             return response()->json(['message' => 'Invalid credentials'], 401);
         }
 
-        return response()->json(['message' => 'Login successful', 'data' => $guardian]);
+        return response()->json(['message' => 'Login successful', 'guardian' => $guardian]);
     }
 }
