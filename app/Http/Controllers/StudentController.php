@@ -54,7 +54,7 @@ class StudentController extends Controller
             $student->lastname = $request->input('lastname');
             $student->email = $request->input('email');
             $student->phone = $request->input('phone');
-            $student->password = Hash::make($request->input('password'));
+            $student->password = $request->input('password');
             $student->gender = $request->input('gender');
             $student->profile_picture = $request->input('profile_picture');
             $student->date_of_birth = $request->input('date_of_birth');
@@ -161,7 +161,6 @@ class StudentController extends Controller
 
         return response()->json(['message' => 'Verification code sent'], 200);
     }
-
 
     // Phone Number Verification
     public function verifyPhone(Request $request)
