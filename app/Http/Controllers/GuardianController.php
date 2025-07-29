@@ -4,14 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\Guardian;
 use Illuminate\Http\Request;
-use App\Services\TermiiService;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
 class GuardianController extends Controller
 {
-   public function index()
+    public function index()
     {
         $guardians = Guardian::all();
         return response()->json($guardians);
@@ -63,7 +63,7 @@ class GuardianController extends Controller
             $guardian->lastname = $request->input('lastname');
             $guardian->email = $request->input('email');
             $guardian->phone = $request->input('phone');
-            $guardian->password = Hash::make($request->input('password'));
+            $guardian->password = $request->input('password');
             $guardian->gender = $request->input('gender');
             $guardian->profile_picture = $request->input('profile_picture');
             $guardian->date_of_birth = $request->input('date_of_birth');
@@ -97,43 +97,43 @@ class GuardianController extends Controller
     // Email Verification
     public function verify(Request $request)
     {
-        $validator = Validator::make($request->all(),[
+        $validator = Validator::make($request->all(), [
             'identifier' => 'required', // email or phone
             'code' => 'required',
         ]);
 
-        if($validator->fails()) {
+        if ($validator->fails()) {
             return response()->json([
                 'errors' => $validator->errors()
             ], 400);
         }
 
         try {
-            $user = Guardian::where('email', $request->identifier)
+            $guardian = Guardian::where('email', $request->identifier)
                 ->orWhere('phone', $request->identifier)
                 ->first();
-            if (!$user || $user->verification_code !== $request->code) {
+            if (!$guardian || $guardian->verification_code !== $request->code) {
                 return response()->json(['message' => 'Verification Failed'], 400);
             }
-    
-            if ($user->email && $user->email === $request->identifier) {
-                Guardian::where('email', $user->email)->update([
+
+            if ($guardian->email && $guardian->email === $request->identifier) {
+                Guardian::where('email', $guardian->email)->update([
                     'email_verified_at' => now(),
                     'verification_code' => null,
                 ]);
             }
-            if ($user->phone && $user->phone === $request->identifier) {
-                Guardian::where('phone', $user->email)->update([
+            if ($guardian->phone && $guardian->phone === $request->identifier) {
+                Guardian::where('phone', $guardian->email)->update([
                     'email_verified_at' => now(),
                     'verification_code' => null,
                 ]);
             }
-            $user->save();
-    
+            $guardian->save();
+
             return response()->json([
                 'message' => 'Verified successfully.'
-            ],200);
-        } catch(\Exception $error) {
+            ], 200);
+        } catch (\Exception $error) {
             return response()->json([
                 'errors' => $error,
             ], 500);
@@ -193,18 +193,30 @@ class GuardianController extends Controller
      */
     public function login(Request $request)
     {
-        $data = $request->validate([
+        $credentials = $request->validate([
             'email' => 'required|email',
             'password' => 'required|string',
         ]);
 
-        $guardian = Guardian::where('email', $data['email'])->first();
+        if (Auth::guard('guardian')->attempt($credentials)) {
+            $guardian = Auth::guard('guardian')->user();
 
-        if (!$guardian || !Hash::check($data['password'], $guardian->password)) {
-            return response()->json(['message' => 'Invalid credentials'], 401);
+            // Make sure guardian is authenticated and saved
+            if (!$guardian || !$guardian->id) {
+                return response()->json([
+                    'message' => 'Something went wrong, user not authenticated properly.'
+                ], 500);
+            }
+
+            $token = $guardian->createToken('guardian-token')->plainTextToken;
+
+            return response()->json([
+                'message' => 'Login successful',
+                'guardian' => $guardian,
+                'guardian-token' => $token,
+            ], 200);
         }
 
-        return response()->json(['message' => 'Login successful', 'guardian' => $guardian]);
-    } 
-    
+        return response()->json(['message' => 'Invalid email or password'], 401);
+    }
 }

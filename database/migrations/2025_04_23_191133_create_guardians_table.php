@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('guardians', function (Blueprint $table) {
-            $table->id('guardian_id');
+            $table->id();
 
             // Guardian Informations
             $table->string('firstname');
@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('phone')->unique()->nullable();
             $table->string('password');
 
-            $table->enum('gender', ['Male', 'Female', 'Others'])->nullable()->default('Female');
+            $table->enum('gender', ['Male', 'Female', 'Others'])->default('Female')->nullable();
             $table->string('profile_picture')->nullable();
             $table->date('date_of_birth')->nullable();
 
