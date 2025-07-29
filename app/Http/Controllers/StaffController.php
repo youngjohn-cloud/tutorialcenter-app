@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Staff;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 
 
@@ -20,7 +21,6 @@ class StaffController extends Controller
             'lastname' => 'required|string|max:255',
             'email' => 'required|email|unique:staff,email',
             'phone' => 'nullable|string|unique:staff,phone',
-            'password' => 'required|string|min:8',
             'gender' => 'nullable|in:Male,Female,Others',
             'staff_role' => 'nullable|in:admin,tutor,adviser,staff',
             'profile_picture' => 'nullable|string',
@@ -41,30 +41,48 @@ class StaffController extends Controller
 
         // Create staff
         try {
-            $verification_code = rand(100000, 999999);
+            /*
+             *Generate unique staff ID
+             *Format: TC{year}{month}{random_number}
+             *Example: TC25071234 for a staff created in July 2025 with a random number
+             */
+            $year = date('ym');
+            $rand = rand(1000, 9999);
+            $staff_id = 'TC' . $year . $rand;
 
             $staff = new Staff;
+            $staff->staff_id = $staff_id;
             $staff->firstname = $request->input('firstname');
             $staff->lastname = $request->input('lastname');
             $staff->email = $request->input('email');
             $staff->phone = $request->input('phone');
-            $staff->password = bcrypt($request->input('password'));
             if($request->has('gender')) {
                 $staff->gender = $request->input('gender');
             }
+            $staff->password = $staff_id;
             $staff->staff_role = $request->input('staff_role') ?? 'staff';
             $staff->profile_picture = $request->input('profile_picture');
             $staff->date_of_birth = $request->input('date_of_birth');
             $staff->home_address = $request->input('home_address');
             $staff->indected_by = $request->input('indected_by');
-            $staff->verification_code = $verification_code;
             $staff->verified = false;
             $staff->status = 'inactive';
             $staff->save();
 
             // Send verification code
             if ($request->email) {
-                // Mail::to($staff->email)->send(new \App\Mail\StaffEmailVerification($staff));
+                Mail::send('emails.staff-induction', [
+                    'firstname' => $staff->firstname,
+                    'lastname' => $staff->lastname,
+                    'role' => $staff->staff_role,
+                    'staff_id' => $staff->staff_id,
+                    'email' => $staff->email,
+                    'login_link' => env('FRONTEND_URL') . '/api/staff/login',
+                ], function ($message) use ($staff) {
+                    $message->to($staff->email)
+                        ->subject('Welcome to Tutorial Center!');
+                });
+
             } else if ($request->phone) {
                 // $smsResponse = $termii->sendSms($staff->phone, "Your verification code is $verification_code");
 
@@ -75,7 +93,7 @@ class StaffController extends Controller
             }
 
             return response()->json([
-                'message' => 'Verification code sent.',
+                'message' => 'Staff created successfully. Induction mail has been sent.',
                 'staff' => $staff,
             ], 201);
         } catch (\Exception $e) {
