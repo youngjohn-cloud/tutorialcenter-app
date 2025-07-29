@@ -2,12 +2,20 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
-class Staff extends Model
+class Staff extends Authenticatable
 {
+    use HasApiTokens, Notifiable;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
+        'staff_id',
         'firstname',
         'lastname',
         'email',
@@ -25,8 +33,6 @@ class Staff extends Model
         'department',
         'inducted_by'
     ];
-
-    
 
     protected $hidden = [
         'password',
