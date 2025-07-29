@@ -29,7 +29,7 @@ class GuardianController extends Controller
             'email' => 'nullable|email|unique:guardians,email',
             'phone' => 'nullable|string|unique:guardians,phone',
             'password' => 'required|string|min:8',
-            'gender' => 'nullable|in:male,female,others',
+            'gender' => 'nullable|in:Male,Female,Others',
             'profile_picture' => 'nullable|string',
             'date_of_birth' => 'nullable|date',
             'location' => 'nullable|string',

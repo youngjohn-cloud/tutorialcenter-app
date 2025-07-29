@@ -24,7 +24,7 @@ class StudentController extends Controller
             'email' => 'nullable|email|unique:students,email',
             'phone' => 'nullable|string|unique:students,phone',
             'password' => 'required|string|min:8',
-            'gender' => 'nullable|in:male,female,others',
+            'gender' => 'nullable|in:Male,Female,Others',
             'profile_picture' => 'nullable|string',
             'date_of_birth' => 'nullable|date',
             'location' => 'nullable|string',
@@ -142,6 +142,7 @@ class StudentController extends Controller
 
     }
 
+    // Phone Number Verification
     public function sendPhoneVerification(Request $request, TermiiService $termii)
     {
         $request->validate(['phone' => 'required|string']);
