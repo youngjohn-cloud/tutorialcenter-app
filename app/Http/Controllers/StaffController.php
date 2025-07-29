@@ -49,7 +49,9 @@ class StaffController extends Controller
             $staff->email = $request->input('email');
             $staff->phone = $request->input('phone');
             $staff->password = bcrypt($request->input('password'));
-            $staff->gender = $request->input('gender');
+            if($request->has('gender')) {
+                $staff->gender = $request->input('gender');
+            }
             $staff->staff_role = $request->input('staff_role') ?? 'staff';
             $staff->profile_picture = $request->input('profile_picture');
             $staff->date_of_birth = $request->input('date_of_birth');

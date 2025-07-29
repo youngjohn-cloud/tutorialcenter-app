@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('phone')->unique()->nullable();
             $table->string('password');
 
-            $table->enum('gender', ['Male', 'Female', 'Others'])->default('Female')->nullable();
+            $table->enum('gender', ['Male', 'Female', 'Others'])->default('Female');
             $table->string('profile_picture')->nullable();
             $table->date('date_of_birth')->nullable();
 

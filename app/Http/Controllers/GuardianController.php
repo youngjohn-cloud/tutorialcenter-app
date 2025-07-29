@@ -64,7 +64,9 @@ class GuardianController extends Controller
             $guardian->email = $request->input('email');
             $guardian->phone = $request->input('phone');
             $guardian->password = $request->input('password');
-            $guardian->gender = $request->input('gender');
+            if($request->has('gender')) {
+                $guardian->gender = $request->input('gender');
+            }
             $guardian->profile_picture = $request->input('profile_picture');
             $guardian->date_of_birth = $request->input('date_of_birth');
             $guardian->location = $request->input('location');
