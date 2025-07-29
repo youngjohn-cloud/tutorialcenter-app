@@ -55,7 +55,9 @@ class StudentController extends Controller
             $student->email = $request->input('email');
             $student->phone = $request->input('phone');
             $student->password = $request->input('password');
-            $student->gender = $request->input('gender');
+            if($request->has('gender')) {
+                $student->gender = $request->input('gender');
+            }
             $student->profile_picture = $request->input('profile_picture');
             $student->date_of_birth = $request->input('date_of_birth');
             $student->location = $request->input('location');
