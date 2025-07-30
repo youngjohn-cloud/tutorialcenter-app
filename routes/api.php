@@ -38,5 +38,6 @@ Route::prefix('staffs')->group(function () {
     Route::get('/{staff}', [StaffController::class, 'show']); // Show specific staff
     Route::put('/{staff}', [StaffController::class, 'update']); // Update a staff
     Route::delete('/{staff}', [StaffController::class, 'destroy']); // Delete a staff
+    Route::post('/login', [StaffController::class, 'login']); //staff login
 });
 
