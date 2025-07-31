@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Staff;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
 
@@ -99,5 +100,29 @@ class StaffController extends Controller
         } catch (\Exception $e) {
             return response()->json(['errors' => $e->getMessage()], 500);
         }
+    }
+
+
+    //staff login method
+    public function login(Request $request)
+    {
+        $data = $request->validate([
+            'identifier' => 'required|email',
+            'password' => 'required|string',
+        ]);
+
+        try {
+            $staff = Staff::where('email', $data['identifier'])->orWhere('phone', $data['identifier'])->first();
+            
+            if (!$staff || !Hash::check($data['password'], $staff->password)) {
+                return response()->json(['message' => 'Invalid credentials'], 401);
+            }
+    
+            // Generate token or handle authentication as needed
+            return response()->json(['message' => 'Login successful', 'staff' => $staff], 200);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'An error occurred during login', 'error' => $e->getMessage()], 500);
+        }
+
     }
 }
