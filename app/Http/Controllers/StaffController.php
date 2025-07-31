@@ -20,8 +20,8 @@ class StaffController extends Controller
         $validator = Validator::make($request->all(), [
             'firstname' => 'required|string|max:255',
             'lastname' => 'required|string|max:255',
-            'email' => 'required|email|unique:staff,email',
-            'phone' => 'nullable|string|unique:staff,phone',
+            'email' => 'required|email|unique:staffs,email',
+            'phone' => 'nullable|string|unique:staffs,phone',
             'gender' => 'nullable|in:Male,Female,Others',
             'staff_role' => 'nullable|in:admin,tutor,adviser,staff',
             'profile_picture' => 'nullable|string',
@@ -125,4 +125,40 @@ class StaffController extends Controller
         }
 
     }
+
+
+    public function update(Request $request, Staff $staff)
+    {
+        // Validate incoming data
+        $data = $request->validate([
+            'firstname' => 'nullable|string|max:255',
+            'lastname' => 'nullable|string|max:255',
+            'email' => 'nullable|email|unique:staffs,email,' . $staff->id,
+            'phone' => 'nullable|string|unique:staffs,phone,' . $staff->id,
+            'password' => 'nullable|string|min:6',
+            'gender' => 'nullable|in:male,female,others',
+            'profile_picture' => 'nullable|string',
+            'date_of_birth' => 'nullable|date',
+            'home_address' => 'nullable|string',
+            'staff_role' => 'nullable|in:admin,tutor,adviser,staff',
+            'indected_by' => 'nullable|integer|exists:staff,staff_id',
+        ]);
+
+        try {
+            // Update staff profile
+            $staff->update($data);
+            return response()->json([
+                'staff' => $staff,
+                'message' => 'Staff profile updated successfully',
+            ], 200);
+
+        } catch (\Exception $error) {
+            return response()->json([
+                'errors' => $error->getMessage(),
+                'message' => 'An error occurred while updating the student.',
+            ], 500);
+        }
+
+    }
+
 }
