@@ -24,7 +24,7 @@ class StudentController extends Controller
             'email' => 'nullable|email|unique:students,email',
             'phone' => 'nullable|string|unique:students,phone',
             'password' => 'required|string|min:8',
-            'gender' => 'nullable|in:male,female,others',
+            'gender' => 'nullable|in:Male,Female,Others',
             'profile_picture' => 'nullable|string',
             'date_of_birth' => 'nullable|date',
             'location' => 'nullable|string',
@@ -54,8 +54,10 @@ class StudentController extends Controller
             $student->lastname = $request->input('lastname');
             $student->email = $request->input('email');
             $student->phone = $request->input('phone');
-            $student->password = Hash::make($request->input('password'));
-            $student->gender = $request->input('gender');
+            $student->password = $request->input('password');
+            if($request->has('gender')) {
+                $student->gender = $request->input('gender');
+            }
             $student->profile_picture = $request->input('profile_picture');
             $student->date_of_birth = $request->input('date_of_birth');
             $student->location = $request->input('location');
@@ -141,6 +143,7 @@ class StudentController extends Controller
         }
     }
 
+    // Phone Number Verification
     public function sendPhoneVerification(Request $request, TermiiService $termii)
     {
         $request->validate(['phone' => 'required|string']);
@@ -160,7 +163,6 @@ class StudentController extends Controller
 
         return response()->json(['message' => 'Verification code sent'], 200);
     }
-
 
     // Phone Number Verification
     public function verifyPhone(Request $request)

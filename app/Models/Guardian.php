@@ -5,9 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
-class Guardian extends Model
+class Guardian extends Authenticatable
 {
+    use HasApiTokens, Notifiable;
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
@@ -30,6 +34,7 @@ class Guardian extends Model
 
     protected $hidden = [
         'password',
+        'remember_token',
     ];
 
     protected $casts = [

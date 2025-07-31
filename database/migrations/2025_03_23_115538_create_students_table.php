@@ -19,7 +19,7 @@ return new class extends Migration {
             $table->string('email')->unique()->nullable();
             $table->string('phone')->unique()->nullable();
             $table->string('password');
-            $table->enum('gender', ['male', 'female', 'others'])->nullable()->default('female');
+            $table->enum('gender', ['Male', 'Female', 'Others'])->default('Female');
             $table->string('profile_picture')->nullable();
             $table->date('date_of_birth')->nullable();
 
