@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Staff;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -51,6 +52,8 @@ class StaffController extends Controller
             $rand = rand(1000, 9999);
             $staff_id = 'TC' . $year . $rand;
 
+            $staff = Auth::guard('staff')->user();
+
             $staff = new Staff;
             $staff->staff_id = $staff_id;
             $staff->firstname = $request->input('firstname');
@@ -65,7 +68,9 @@ class StaffController extends Controller
             $staff->profile_picture = $request->input('profile_picture');
             $staff->date_of_birth = $request->input('date_of_birth');
             $staff->home_address = $request->input('home_address');
-            $staff->indected_by = $request->input('indected_by');
+            // $staff->indected_by = $request->input('indected_by');
+            $staff->indected_by = $staff->id;
+
             $staff->verified = false;
             $staff->status = 'inactive';
             $staff->save();
@@ -104,8 +109,7 @@ class StaffController extends Controller
 
 
     //staff login method
-    public function login(Request $request)
-    {
+    public function login(Request $request){
         $data = $request->validate([
             'identifier' => 'required|email',
             'password' => 'required|string',
@@ -127,8 +131,7 @@ class StaffController extends Controller
     }
 
 
-    public function update(Request $request, Staff $staff)
-    {
+    public function update(Request $request, Staff $staff){
         // Validate incoming data
         $data = $request->validate([
             'firstname' => 'nullable|string|max:255',
@@ -158,7 +161,5 @@ class StaffController extends Controller
                 'message' => 'An error occurred while updating the student.',
             ], 500);
         }
-
     }
-
 }

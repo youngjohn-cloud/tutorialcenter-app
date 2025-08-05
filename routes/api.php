@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\SectionController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\StaffController;
@@ -32,12 +33,18 @@ Route::prefix('guardians')->group(function () {
 });
 
 Route::prefix('staffs')->group(function () {
-    Route::get('/', [StaffController::class, 'index']); // List all staff
     Route::post('/register', [StaffController::class, 'store']); // Create a new staff
+    Route::get('/', [StaffController::class, 'index']); // List all staff
     Route::post('/verify', [StaffController::class, 'verify']); // Email Verification
     Route::get('/{staff}', [StaffController::class, 'show']); // Show specific staff
     Route::put('/{staff}', [StaffController::class, 'update']); // Update a staff
     Route::delete('/{staff}', [StaffController::class, 'destroy']); // Delete a staff
     Route::post('/login', [StaffController::class, 'login']); //staff login
+    Route::middleware('auth:sanctum')->group(function (){
+        // Route::post('/register', [StaffController::class, 'store']); // Create a new staff
+
+    });
+    // Section Routes
+    Route::post('/createclass', [SectionController::class, 'createclass']);
 });
 
