@@ -1,10 +1,10 @@
 <?php
 
-use App\Http\Controllers\SectionController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\StudentController;
+use App\Http\Controllers\SectionController;
 use App\Http\Controllers\GuardianController;
 
 // Student API Routes
@@ -22,6 +22,7 @@ Route::prefix('students')->group(function () {
 
 });
 
+// Guardian API Routes
 Route::prefix('guardians')->group(function () {
     Route::get('/', [GuardianController::class, 'index']);            // List all guardians
     Route::post('/register', [GuardianController::class, 'store']);           // Create a new guardian
@@ -32,14 +33,16 @@ Route::prefix('guardians')->group(function () {
     Route::post('/login', [GuardianController::class, 'login']);      // Guardian login
 });
 
+// Staff API Routes
 Route::prefix('staffs')->group(function () {
-    Route::post('/register', [StaffController::class, 'store']); // Create a new staff
     Route::get('/', [StaffController::class, 'index']); // List all staff
+    Route::post('/register', [StaffController::class, 'store']); // Create a new staff
     Route::post('/verify', [StaffController::class, 'verify']); // Email Verification
     Route::get('/{staff}', [StaffController::class, 'show']); // Show specific staff
     Route::put('/{staff}', [StaffController::class, 'update']); // Update a staff
     Route::delete('/{staff}', [StaffController::class, 'destroy']); // Delete a staff
     Route::post('/login', [StaffController::class, 'login']); //staff login
+    
     Route::middleware('auth:sanctum')->group(function (){
         // Route::post('/register', [StaffController::class, 'store']); // Create a new staff
 
@@ -47,4 +50,15 @@ Route::prefix('staffs')->group(function () {
     // Section Routes
     Route::post('/createclass', [SectionController::class, 'createclass']);
 });
+
+
+// Section (Classes) API Routes 
+Route::prefix('sections')->group(function () {
+    Route::get('/', [SectionController::class, 'index']);         // List all active sections
+    Route::post('/', [SectionController::class, 'store']);        // Create section
+    Route::get('/{id}', [SectionController::class, 'show']);      // Show section by ID or slug
+    Route::put('/{id}', [SectionController::class, 'update']);    // Update section
+    Route::delete('/{id}', [SectionController::class, 'destroy']); // Delete section
+});
+
 

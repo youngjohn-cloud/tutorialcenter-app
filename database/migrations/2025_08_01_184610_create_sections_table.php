@@ -13,9 +13,11 @@ return new class extends Migration
     {
         Schema::create('sections', function (Blueprint $table) {
             $table->id();
-            $table->string('title');
-            $table->text("description");
-            $table->string('department')->nullable();
+            $table->string('name'); // WAEC, JAMB, etc.
+            $table->string('slug')->unique(); // waec, jamb
+            $table->text('description')->nullable();
+            $table->enum('status', ['active', 'inactive'])->default('active');
+            $table->decimal('price', 10, 2)->default(0.00); // optional
             $table->softDeletes();
             $table->timestamps();
         });

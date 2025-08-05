@@ -60,7 +60,7 @@ class StaffController extends Controller
             $staff->lastname = $request->input('lastname');
             $staff->email = $request->input('email');
             $staff->phone = $request->input('phone');
-            if($request->has('gender')) {
+            if ($request->has('gender')) {
                 $staff->gender = $request->input('gender');
             }
             $staff->password = $staff_id;
@@ -107,31 +107,73 @@ class StaffController extends Controller
         }
     }
 
-
     //staff login method
-    public function login(Request $request){
-        $data = $request->validate([
-            'identifier' => 'required|email',
+    public function login(Request $request)
+    {
+        // $credentials = $request->validate([
+        //     'email' => 'required|email',
+        //     'password' => 'required|string',
+        // ]);
+        // return $credentials;
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email',
             'password' => 'required|string',
         ]);
 
-        try {
-            $staff = Staff::where('email', $data['identifier'])->orWhere('phone', $data['identifier'])->first();
-            
-            if (!$staff || !Hash::check($data['password'], $staff->password)) {
-                return response()->json(['message' => 'Invalid credentials'], 401);
-            }
-    
-            // Generate token or handle authentication as needed
-            return response()->json(['message' => 'Login successful', 'staff' => $staff], 200);
-        } catch (\Exception $e) {
-            return response()->json(['message' => 'An error occurred during login', 'error' => $e->getMessage()], 500);
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 400);
         }
 
+          $credentials = $request->only('email', 'password');
+
+        if (Auth::guard('staff')->attempt($credentials)) {
+            $staff = Auth::guard('staff')->user();
+
+            // Make sure staff is authenticated and saved
+            if (!$staff || !$staff->id) {
+                return response()->json([
+                    'message' => 'Something went wrong, user not authenticated properly.'
+                ], 500);
+            }
+
+            $token = $staff->createToken('staff-token')->plainTextToken;
+
+            return response()->json([
+                'message' => 'Login successful',
+                'staff' => $staff,
+                'staff-token' => $token,
+            ], 200);
+        }
+
+        return response()->json(['message' => 'Invalid email or password'], 401);
     }
 
+    // public function login(Request $request){
 
-    public function update(Request $request, Staff $staff){
+    //     $data = $request->validate([
+    //         'identifier' => 'required|email',
+    //         'password' => 'required|string',
+    //     ]);
+    //     return "Hello";
+
+    //     try {
+    //         $staff = Staff::where('email', $data['identifier'])->orWhere('phone', $data['identifier'])->first();
+
+    //         if (!$staff || !Hash::check($data['password'], $staff->password)) {
+    //             return response()->json(['message' => 'Invalid credentials'], 401);
+    //         }
+
+    //         // Generate token or handle authentication as needed
+    //         return response()->json(['message' => 'Login successful', 'staff' => $staff], 200);
+    //     } catch (\Exception $e) {
+    //         return response()->json(['message' => 'An error occurred during login', 'error' => $e->getMessage()], 500);
+    //     }
+
+    // }
+
+
+    public function update(Request $request, Staff $staff)
+    {
         // Validate incoming data
         $data = $request->validate([
             'firstname' => 'nullable|string|max:255',
