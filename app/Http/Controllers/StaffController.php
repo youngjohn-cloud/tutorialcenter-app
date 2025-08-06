@@ -110,11 +110,6 @@ class StaffController extends Controller
     //staff login method
     public function login(Request $request)
     {
-        // $credentials = $request->validate([
-        //     'email' => 'required|email',
-        //     'password' => 'required|string',
-        // ]);
-        // return $credentials;
         $validator = Validator::make($request->all(), [
             'email' => 'required|email',
             'password' => 'required|string',
@@ -147,8 +142,6 @@ class StaffController extends Controller
 
         return response()->json(['message' => 'Invalid email or password'], 401);
     }
-
-    // public function login(Request $request){
 
     //     $data = $request->validate([
     //         'identifier' => 'required|email',
