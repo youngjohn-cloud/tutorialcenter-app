@@ -24,12 +24,12 @@ class CourseController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name'              => 'required|string|max:255',
-            'description'       => 'required|string',
-            'sections_ids'      => 'nullable|array',
-            'tutors_assignees'  => 'nullable|array',
-            'created_by'        => 'required|exists:staff,staff_id',
-            'status'            => 'in:active,inactive',
+            'name' => 'required|string|max:255',
+            'description' => 'required|string',
+            'sections_ids' => 'nullable|array',
+            'tutors_assignees' => 'nullable|array',
+            'created_by' => 'required|exists:staff,staff_id',
+            'status' => 'in:active,inactive',
         ]);
 
         if ($validator->fails()) {
@@ -37,13 +37,13 @@ class CourseController extends Controller
         }
 
         $course = Course::create([
-            'name'              => $request->name,
-            'slug'              => Str::slug($request->name) . '-' . uniqid(),
-            'description'       => $request->description,
-            'sections_ids'      => $request->sections_ids ?? [],
-            'tutors_assignees'  => $request->tutors_assignees ?? [],
-            'created_by'        => $request->created_by,
-            'status'            => $request->status ?? 'active',
+            'name' => $request->name,
+            'slug' => Str::slug($request->name) . '-' . uniqid(),
+            'description' => $request->description,
+            'sections_ids' => $request->sections_ids ?? [],
+            'tutors_assignees' => $request->tutors_assignees ?? [],
+            'created_by' => $request->created_by,
+            'status' => $request->status ?? 'active',
         ]);
 
         return response()->json([
