@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Section;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 
 class SectionController extends Controller
@@ -23,24 +24,44 @@ class SectionController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255|unique:sections,name',
             'description' => 'nullable|string',
-            'price' => 'nullable|numeric|min:0',
+            'price' => 'required|numeric|min:0',
         ]);
 
-        $section = Section::create([
-            'name' => $request->name,
-            'slug' => Str::slug($request->name),
-            'description' => $request->description,
-            'status' => 'active',
-            'price' => $request->price ?? 0.00,
-        ]);
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Class creation failed.',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+        // Create the section
+        try {
+            $existingSection = Section::where('name', $request->name)->first();
+            if ($existingSection) {
+                return response()->json([
+                    'message' => "Section with this $request->name already exists.",
+                ], 422);
+            }
 
-        return response()->json([
-            'message' => 'Section created successfully.',
-            'section' => $section
-        ], 201);
+            $section = Section::create([
+                'name' => $request->name,
+                'slug' => Str::slug($request->name),
+                'description' => $request->description,
+                'status' => 'active',
+                'price' => $request->price ?? 0.00,
+            ]);
+
+            return response()->json([
+                'message' => 'Section created successfully.',
+                'section' => $section
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error checking existing section: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**
@@ -49,8 +70,8 @@ class SectionController extends Controller
     public function show($identifier)
     {
         $section = Section::where('id', $identifier)
-                    ->orWhere('slug', $identifier)
-                    ->firstOrFail();
+            ->orWhere('slug', $identifier)
+            ->firstOrFail();
 
         return response()->json($section);
     }

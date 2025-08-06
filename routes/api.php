@@ -1,4 +1,7 @@
 <?php
+// composer require laravel/sanctum
+// php artisan vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider"
+
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -48,7 +51,7 @@ Route::prefix('staffs')->group(function () {
 
     });
     // Section Routes
-    Route::post('/createclass', [SectionController::class, 'createclass']);
+    Route::post('/createclass', [SectionController::class, 'store']);
 });
 
 
