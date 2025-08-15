@@ -69,7 +69,7 @@ class StudentController extends Controller
 
             // Send verification code
             if ($request->email) {
-                Mail::to($student->email)->send(new \App\Mail\StudentEmailVerification($student));
+                Mail::to($student->email)->send(new StudentEmailVerification($student));
             } else if ($request->phone) {
                 $smsResponse = $termii->sendSms($student->phone, "Your verification code is $verification_code");
 
