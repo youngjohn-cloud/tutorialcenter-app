@@ -2,30 +2,30 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Section;
+use App\Models\Course;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 
-class SectionController extends Controller
+class CourseController extends Controller
 {
     /**
-     * Display a list of all active sections.
+     * Display a list of all active courses.
      */
     public function index()
     {
-        $sections = Section::active()->get();
+        $courses = Course::active()->get();
 
-        return response()->json($sections);
+        return response()->json($courses);
     }
 
     /**
-     * Store a new section.
+     * Store a new course.
      */
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255|unique:sections,name',
+            'name' => 'required|string|max:255|unique:courses,name',
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
         ]);
@@ -36,16 +36,16 @@ class SectionController extends Controller
                 'errors' => $validator->errors()
             ], 422);
         }
-        // Create the section
+        // Create the course
         try {
-            $existingSection = Section::where('name', $request->name)->first();
-            if ($existingSection) {
+            $existingCourse = Course::where('name', $request->name)->first();
+            if ($existingCourse) {
                 return response()->json([
-                    'message' => "Section with this $request->name already exists.",
+                    'message' => "Course with this $request->name already exists.",
                 ], 422);
             }
 
-            $section = Section::create([
+            $course = Course::create([
                 'name' => $request->name,
                 'slug' => Str::slug($request->name),
                 'description' => $request->description,
@@ -54,66 +54,66 @@ class SectionController extends Controller
             ]);
 
             return response()->json([
-                'message' => 'Section created successfully.',
-                'section' => $section
+                'message' => 'course created successfully.',
+                'course' => $course
             ], 201);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Error checking existing section: ' . $e->getMessage(),
+                'message' => 'Error checking existing course: ' . $e->getMessage(),
             ], 500);
         }
     }
 
     /**
-     * Show a single section by ID or slug.
+     * Show a single course by ID or slug.
      */
     public function show($identifier)
     {
-        $section = Section::where('id', $identifier)
+        $course = Course::where('id', $identifier)
             ->orWhere('slug', $identifier)
             ->firstOrFail();
 
-        return response()->json($section);
+        return response()->json($course);
     }
 
     /**
-     * Update an existing section.
+     * Update an existing course.
      */
     public function update(Request $request, $id)
     {
-        $section = Section::findOrFail($id);
+        $course = Course::findOrFail($id);
 
         $request->validate([
-            'name' => 'sometimes|required|string|max:255|unique:sections,name,' . $section->id,
+            'name' => 'sometimes|required|string|max:255|unique:courses,name,' . $course->id,
             'description' => 'nullable|string',
             'status' => 'in:active,inactive',
             'price' => 'nullable|numeric|min:0',
         ]);
 
-        $section->update([
-            'name' => $request->name ?? $section->name,
-            'slug' => Str::slug($request->name ?? $section->name),
-            'description' => $request->description ?? $section->description,
-            'status' => $request->status ?? $section->status,
-            'price' => $request->price ?? $section->price,
+        $course->update([
+            'name' => $request->name ?? $course->name,
+            'slug' => Str::slug($request->name ?? $course->name),
+            'description' => $request->description ?? $course->description,
+            'status' => $request->status ?? $course->status,
+            'price' => $request->price ?? $course->price,
         ]);
 
         return response()->json([
-            'message' => 'Section updated successfully.',
-            'section' => $section
+            'message' => 'Course updated successfully.',
+            'course' => $course
         ]);
     }
 
     /**
-     * Delete (soft delete) a section.
+     * Delete (soft delete) a course.
      */
     public function destroy($id)
     {
-        $section = Section::findOrFail($id);
-        $section->delete();
+        $course = Course::findOrFail($id);
+        $course->delete();
 
         return response()->json([
-            'message' => 'Section deleted successfully.'
+            'message' => 'Course deleted successfully.'
         ]);
     }
 }
