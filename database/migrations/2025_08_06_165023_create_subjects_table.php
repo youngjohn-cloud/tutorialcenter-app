@@ -10,15 +10,16 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('courses', function (Blueprint $table) {
+        Schema::create('subjects', function (Blueprint $table) {
             $table->id();
             $table->string('name');
             $table->string('slug')->unique();
             $table->text('description');
 
-            // Store sections and tutors as JSON
-            $table->json('sections_ids')->nullable();
+            // Store courses and tutors as JSON
+            $table->json('courses_ids')->nullable();
             $table->json('tutors_assignees')->nullable();
+            $table->json('departments')->nullable();
 
             // Link to the staff who created the course
             $table->foreignId('created_by')->constrained('staffs')->onDelete('cascade');
@@ -35,6 +36,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('courses');
+        Schema::dropIfExists('subjects');
     }
 };

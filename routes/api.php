@@ -3,6 +3,7 @@
 // php artisan vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider"
 
 
+use App\Http\Controllers\SubjectController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\StaffController;
@@ -62,6 +63,15 @@ Route::prefix('sections')->group(function () {
     Route::get('/{id}', [SectionController::class, 'show']);      // Show section by ID or slug
     Route::put('/{id}', [SectionController::class, 'update']);    // Update section
     Route::delete('/{id}', [SectionController::class, 'destroy']); // Delete section
+});
+
+// Subjects API Routes
+Route::prefix('subjects')->group(function () {
+    Route::get('/', [SubjectController::class, 'index']);         // List all active subjects
+    Route::post('/', [SubjectController::class, 'store']);        // Create subject
+    Route::get('/{id}', [SubjectController::class, 'show']);      // Show subject by ID
+    Route::put('/{id}', [SubjectController::class, 'update']);    // Update subject
+    Route::delete('/{id}', [SubjectController::class, 'destroy']); // Delete subject
 });
 
 

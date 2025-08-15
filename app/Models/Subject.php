@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Course extends Model
+class Subject extends Model
 {
     use SoftDeletes;
 
@@ -14,6 +14,7 @@ class Course extends Model
         'slug',
         'description',
         'sections_ids',
+        'departments',
         'created_by',
         'status',
         'tutors_assignees',
@@ -22,6 +23,7 @@ class Course extends Model
     protected $casts = [
         'sections_ids' => 'array',
         'tutors_assignees' => 'array',
+        'departments' => 'array',
     ];
 
     /**

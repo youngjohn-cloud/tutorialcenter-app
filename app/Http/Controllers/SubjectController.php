@@ -2,33 +2,34 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Course;
+use App\Models\Subject;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Validator;
 
-class CourseController extends Controller
+class SubjectController extends Controller
 {
     /**
-     * Display a list of all courses.
+     * Display a list of all subjects.
      */
     public function index()
     {
-        $courses = Course::latest()->get();
-        return response()->json($courses, 200);
+        $subjects = Subject::latest()->get();
+        return response()->json($subjects, 200);
     }
 
     /**
-     * Store a new course.
+     * Store a new subject.
      */
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'description' => 'required|string',
-            'sections_ids' => 'nullable|array',
+            'courses_ids' => 'nullable|array',
             'tutors_assignees' => 'nullable|array',
-            'created_by' => 'required|exists:staff,staff_id',
+            'departments' => 'nullable|array',
+            'created_by' => 'required|exists:staffs,id',
             'status' => 'in:active,inactive',
         ]);
 
@@ -36,52 +37,54 @@ class CourseController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $course = Course::create([
+        $subject = Subject::create([
             'name' => $request->name,
             'slug' => Str::slug($request->name) . '-' . uniqid(),
             'description' => $request->description,
-            'sections_ids' => $request->sections_ids ?? [],
+            'courses_ids' => $request->courses_ids ?? [],
             'tutors_assignees' => $request->tutors_assignees ?? [],
+            'departments' => $request->departments ?? [],
             'created_by' => $request->created_by,
             'status' => $request->status ?? 'active',
         ]);
 
         return response()->json([
-            'message' => 'Course created successfully.',
-            'course'  => $course
+            'message' => 'Subject created successfully.',
+            'subject'  => $subject
         ], 201);
     }
 
     /**
-     * Show a specific course.
+     * Show a specific subject.
      */
     public function show($id)
     {
-        $course = Course::find($id);
+        $subject = Subject::find($id);
 
-        if (!$course) {
-            return response()->json(['message' => 'Course not found.'], 404);
+        if (!$subject) {
+            return response()->json(['message' => 'Subject not found.'], 404);
         }
 
-        return response()->json($course, 200);
+        return response()->json($subject, 200);
     }
 
     /**
-     * Update a course.
+     * Update a subject.
      */
     public function update(Request $request, $id)
     {
-        $course = Course::find($id);
+        $subject = Subject::find($id);
 
-        if (!$course) {
-            return response()->json(['message' => 'Course not found.'], 404);
+        if (!$subject) {
+            return response()->json(['message' => 'Subject not found.'], 404);
         }
 
         $validator = Validator::make($request->all(), [
             'name'              => 'sometimes|string|max:255',
             'description'       => 'sometimes|string',
-            'sections_ids'      => 'nullable|array',
+            'courses_ids'      => 'nullable|array',
             'tutors_assignees'  => 'nullable|array',
+            'departments'       => 'nullable|array',
             'status'            => 'in:active,inactive',
         ]);
 
@@ -89,35 +92,36 @@ class CourseController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $course->update($request->only([
+        $subject->update($request->only([
             'name',
             'description',
-            'sections_ids',
+            'courses_ids',
             'tutors_assignees',
+            'departments',
             'status',
         ]));
 
         if ($request->has('name')) {
-            $course->slug = Str::slug($request->name) . '-' . uniqid();
-            $course->save();
+            $subject->slug = Str::slug($request->name) . '-' . uniqid();
+            $subject->save();
         }
 
-        return response()->json(['message' => 'Course updated.', 'course' => $course], 200);
+        return response()->json(['message' => 'Subject updated.', 'subject' => $subject], 200);
     }
 
     /**
-     * Soft delete a course.
+     * Soft delete a subject.
      */
     public function destroy($id)
     {
-        $course = Course::find($id);
+        $subject = Subject::find($id);
 
-        if (!$course) {
-            return response()->json(['message' => 'Course not found.'], 404);
+        if (!$subject) {
+            return response()->json(['message' => 'Subject not found.'], 404);
         }
 
-        $course->delete();
+        $subject->delete();
 
-        return response()->json(['message' => 'Course deleted.'], 200);
+        return response()->json(['message' => 'Subject deleted.'], 200);
     }
 }
