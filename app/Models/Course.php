@@ -1,4 +1,9 @@
 <?php
+/* Section is use to replace class. 
+ * we can't have Class as a name of Object 
+ * due to php inbuilt keyword
+ * so we decided to use section
+ */
 
 namespace App\Models;
 
@@ -13,22 +18,29 @@ class Course extends Model
         'name',
         'slug',
         'description',
-        'sections_ids',
-        'created_by',
         'status',
-        'tutors_assignees',
-    ];
-
-    protected $casts = [
-        'sections_ids' => 'array',
-        'tutors_assignees' => 'array',
+        'price',
     ];
 
     /**
-     * Relationship: Course belongs to a staff (creator)
+     * Relationships (if needed)
      */
-    public function creator()
+
+    // public function enrollments()
+    // {
+    //     return $this->hasMany(Enrollment::class);
+    // }
+
+    // public function subjects()
+    // {
+    //     return $this->hasMany(SectionSubject::class); // if you later create section_subjects
+    // }
+
+    /**
+     * Optional: scope to get only active sections
+     */
+    public function scopeActive($query)
     {
-        return $this->belongsTo(Staff::class, 'created_by');
+        return $query->where('status', 'active');
     }
 }

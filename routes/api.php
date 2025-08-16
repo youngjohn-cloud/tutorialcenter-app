@@ -3,6 +3,8 @@
 // php artisan vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider"
 
 
+use App\Http\Controllers\CourseController;
+use App\Http\Controllers\SubjectController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\StaffController;
@@ -51,17 +53,26 @@ Route::prefix('staffs')->group(function () {
 
     });
     // Section Routes
-    Route::post('/createclass', [SectionController::class, 'store']);
+    Route::post('/createclass', [CourseController::class, 'store']);
 });
 
 
-// Section (Classes) API Routes 
-Route::prefix('sections')->group(function () {
-    Route::get('/', [SectionController::class, 'index']);         // List all active sections
-    Route::post('/', [SectionController::class, 'store']);        // Create section
-    Route::get('/{id}', [SectionController::class, 'show']);      // Show section by ID or slug
-    Route::put('/{id}', [SectionController::class, 'update']);    // Update section
-    Route::delete('/{id}', [SectionController::class, 'destroy']); // Delete section
+// Course (Classes) API Routes 
+Route::prefix('courses')->group(function () {
+    Route::get('/', [CourseController::class, 'index']);         // List all active course
+    Route::post('/', [CourseController::class, 'store']);        // Create courses
+    Route::get('/{id}', [CourseController::class, 'show']);      // Show course by ID or slug
+    Route::put('/{id}', [CourseController::class, 'update']);    // Update course
+    Route::delete('/{id}', [CourseController::class, 'destroy']); // Delete course
+});
+
+// Subject API Routes
+Route::prefix('subjects')->group(function () {
+    Route::get('/', [SubjectController::class, 'index']);         // List all active subjects
+    Route::post('/', [SubjectController::class, 'store']);        // Create subject
+    Route::get('/{id}', [SubjectController::class, 'show']);      // Show subject by ID
+    Route::put('/{id}', [SubjectController::class, 'update']);    // Update subject
+    Route::delete('/{id}', [SubjectController::class, 'destroy']); // Delete subject
 });
 
 
