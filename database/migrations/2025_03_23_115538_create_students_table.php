@@ -11,7 +11,7 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::create('students', function (Blueprint $table) {
-            $table->id('student_id');
+            $table->id();
 
             // Student Informations
             $table->string('firstname');
@@ -31,7 +31,7 @@ return new class extends Migration {
 
             //status
             $table->enum('status', ['online', 'away','offline', 'disabled'])->default('offline');
-            $table->text('location')->nullable();
+            $table->text('location')->nullable();  // (country, state)
             $table->text('home_address')->nullable();
             $table->string('department')->nullable()->default(null);
 
