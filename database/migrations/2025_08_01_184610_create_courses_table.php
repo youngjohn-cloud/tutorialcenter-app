@@ -4,7 +4,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
      */
@@ -12,22 +13,14 @@ return new class extends Migration {
     {
         Schema::create('courses', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('slug')->unique();
-            $table->text('description');
-
-            // Store sections and tutors as JSON
-            $table->json('sections_ids')->nullable();
-            $table->json('tutors_assignees')->nullable();
-
-            // Link to the staff who created the course
-            $table->foreignId('created_by')->constrained('staffs')->onDelete('cascade');
-
+            $table->string('name'); // WAEC, JAMB, etc.
+            $table->string('slug')->unique(); // waec, jamb
+            $table->text('description')->nullable();
             $table->enum('status', ['active', 'inactive'])->default('active');
+            $table->decimal('price', 10, 2)->default(0.00); // optional
             $table->softDeletes();
             $table->timestamps();
         });
-
     }
 
     /**

@@ -4,18 +4,19 @@ namespace App\Http\Controllers;
 
 use App\Models\Course;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class CourseController extends Controller
 {
     /**
-     * Display a list of all courses.
+     * Display a list of all active courses.
      */
     public function index()
     {
-        $courses = Course::latest()->get();
-        return response()->json($courses, 200);
+        $courses = Course::active()->get();
+
+        return response()->json($courses);
     }
 
     /**
@@ -24,100 +25,95 @@ class CourseController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'description' => 'required|string',
-            'sections_ids' => 'nullable|array',
-            'tutors_assignees' => 'nullable|array',
-            'created_by' => 'required|exists:staff,staff_id',
-            'status' => 'in:active,inactive',
+            'name' => 'required|string|max:255|unique:courses,name',
+            'description' => 'nullable|string',
+            'price' => 'required|numeric|min:0',
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+            return response()->json([
+                'message' => 'Class creation failed.',
+                'errors' => $validator->errors()
+            ], 422);
         }
+        // Create the course
+        try {
+            $existingCourse = Course::where('name', $request->name)->first();
+            if ($existingCourse) {
+                return response()->json([
+                    'message' => "Course with this $request->name already exists.",
+                ], 422);
+            }
 
-        $course = Course::create([
-            'name' => $request->name,
-            'slug' => Str::slug($request->name) . '-' . uniqid(),
-            'description' => $request->description,
-            'sections_ids' => $request->sections_ids ?? [],
-            'tutors_assignees' => $request->tutors_assignees ?? [],
-            'created_by' => $request->created_by,
-            'status' => $request->status ?? 'active',
-        ]);
+            $course = Course::create([
+                'name' => $request->name,
+                'slug' => Str::slug($request->name),
+                'description' => $request->description,
+                'status' => 'active',
+                'price' => $request->price ?? 0.00,
+            ]);
 
-        return response()->json([
-            'message' => 'Course created successfully.',
-            'course'  => $course
-        ], 201);
+            return response()->json([
+                'message' => 'course created successfully.',
+                'course' => $course
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error checking existing course: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**
-     * Show a specific course.
+     * Show a single course by ID or slug.
      */
-    public function show($id)
+    public function show($identifier)
     {
-        $course = Course::find($id);
+        $course = Course::where('id', $identifier)
+            ->orWhere('slug', $identifier)
+            ->firstOrFail();
 
-        if (!$course) {
-            return response()->json(['message' => 'Course not found.'], 404);
-        }
-
-        return response()->json($course, 200);
+        return response()->json($course);
     }
 
     /**
-     * Update a course.
+     * Update an existing course.
      */
     public function update(Request $request, $id)
     {
-        $course = Course::find($id);
+        $course = Course::findOrFail($id);
 
-        if (!$course) {
-            return response()->json(['message' => 'Course not found.'], 404);
-        }
-
-        $validator = Validator::make($request->all(), [
-            'name'              => 'sometimes|string|max:255',
-            'description'       => 'sometimes|string',
-            'sections_ids'      => 'nullable|array',
-            'tutors_assignees'  => 'nullable|array',
-            'status'            => 'in:active,inactive',
+        $request->validate([
+            'name' => 'sometimes|required|string|max:255|unique:courses,name,' . $course->id,
+            'description' => 'nullable|string',
+            'status' => 'in:active,inactive',
+            'price' => 'nullable|numeric|min:0',
         ]);
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
+        $course->update([
+            'name' => $request->name ?? $course->name,
+            'slug' => Str::slug($request->name ?? $course->name),
+            'description' => $request->description ?? $course->description,
+            'status' => $request->status ?? $course->status,
+            'price' => $request->price ?? $course->price,
+        ]);
 
-        $course->update($request->only([
-            'name',
-            'description',
-            'sections_ids',
-            'tutors_assignees',
-            'status',
-        ]));
-
-        if ($request->has('name')) {
-            $course->slug = Str::slug($request->name) . '-' . uniqid();
-            $course->save();
-        }
-
-        return response()->json(['message' => 'Course updated.', 'course' => $course], 200);
+        return response()->json([
+            'message' => 'Course updated successfully.',
+            'course' => $course
+        ]);
     }
 
     /**
-     * Soft delete a course.
+     * Delete (soft delete) a course.
      */
     public function destroy($id)
     {
-        $course = Course::find($id);
-
-        if (!$course) {
-            return response()->json(['message' => 'Course not found.'], 404);
-        }
-
+        $course = Course::findOrFail($id);
         $course->delete();
 
-        return response()->json(['message' => 'Course deleted.'], 200);
+        return response()->json([
+            'message' => 'Course deleted successfully.'
+        ]);
     }
 }

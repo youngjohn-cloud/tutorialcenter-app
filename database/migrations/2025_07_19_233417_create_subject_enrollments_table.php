@@ -11,11 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('course_enrollments', function (Blueprint $table) {
-            $table->id('enrollment_id');
-            $table->foreignId('student_id')->constrained('students', 'student_id')->onDelete('cascade');
-            $table->unsignedBigInteger('course_id');  //would be added a foreign key when courses table exist
+        Schema::create('subject_enrollments', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('student_id')->constrained('students')->onDelete('cascade');
+            $table->foreignId('subject_id')->constrained('subjects')->onDelete('cascade'); 
             $table->decimal('progress', 5,2)->nullable();
+
+            $table->softDeletes();
             $table->timestamps();
         });
     }
@@ -25,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('course_enrollments');
+        Schema::dropIfExists('subject_enrollments');
     }
 };

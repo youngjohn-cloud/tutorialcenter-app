@@ -33,7 +33,7 @@ return new class extends Migration
 
             // Status
             $table->enum('status', ['active', 'inactive', 'disable'])->default('inactive');
-            $table->text('location')->nullable();
+            $table->text('location')->nullable();  // (country, state)
             $table->text('home_address')->nullable();
 
             // Relationship to Student
