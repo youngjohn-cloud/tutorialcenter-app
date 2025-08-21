@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 
@@ -88,11 +89,10 @@ class StaffController extends Controller
                     $message->to($staff->email)
                         ->subject('Welcome to Tutorial Center!');
                 });
-
             } else if ($request->phone) {
                 // $smsResponse = $termii->sendSms($staff->phone, "Your verification code is $verification_code");
 
-                \Log::info('Termii SMS response', [
+                Log::info('Termii SMS response', [
                     'phone' => $staff->phone,
                     // 'response' => $smsResponse
                 ]);
@@ -119,7 +119,7 @@ class StaffController extends Controller
             return response()->json(['errors' => $validator->errors()], 400);
         }
 
-          $credentials = $request->only('email', 'password');
+        $credentials = $request->only('email', 'password');
 
         if (Auth::guard('staff')->attempt($credentials)) {
             $staff = Auth::guard('staff')->user();
@@ -131,12 +131,12 @@ class StaffController extends Controller
                 ], 500);
             }
 
-            $token = $staff->createToken('staff-token')->plainTextToken;
+            // $token = $staff->createToken('staff-token')->plainTextToken;
 
             return response()->json([
                 'message' => 'Login successful',
                 'staff' => $staff,
-                'staff-token' => $token,
+                // 'staff-token' => $token,
             ], 200);
         }
 
@@ -189,7 +189,6 @@ class StaffController extends Controller
                 'staff' => $staff,
                 'message' => 'Staff profile updated successfully',
             ], 200);
-
         } catch (\Exception $error) {
             return response()->json([
                 'errors' => $error->getMessage(),

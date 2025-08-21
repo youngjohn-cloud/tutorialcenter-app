@@ -17,7 +17,7 @@ Route::prefix('students')->group(function () {
     Route::get('/', [StudentController::class, 'index']); // List all students
     Route::post('/register', [StudentController::class, 'store']); // Create a new student
     Route::post('/verify', [StudentController::class, 'verify']); // Email Verification
-    Route::get('{student}', [StudentController::class, 'show']); // Show specific student
+    Route::get('/show/{student}', [StudentController::class, 'show']); // Show specific student
     Route::put('{student}', [StudentController::class, 'update']); // Update a student
     Route::delete('{student}', [StudentController::class, 'destroy']); // Delete a student
 
@@ -47,8 +47,8 @@ Route::prefix('staffs')->group(function () {
     Route::put('/{staff}', [StaffController::class, 'update']); // Update a staff
     Route::delete('/{staff}', [StaffController::class, 'destroy']); // Delete a staff
     Route::post('/login', [StaffController::class, 'login']); //staff login
-    
-    Route::middleware('auth:sanctum')->group(function (){
+
+    Route::middleware('auth:sanctum')->group(function () {
         // Route::post('/register', [StaffController::class, 'store']); // Create a new staff
 
     });
@@ -74,5 +74,3 @@ Route::prefix('subjects')->group(function () {
     Route::put('/{id}', [SubjectController::class, 'update']);    // Update subject
     Route::delete('/{id}', [SubjectController::class, 'destroy']); // Delete subject
 });
-
-

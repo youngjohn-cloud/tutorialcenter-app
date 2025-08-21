@@ -55,7 +55,7 @@ class StudentController extends Controller
             $student->email = $request->input('email');
             $student->phone = $request->input('phone');
             $student->password = $request->input('password');
-            if($request->has('gender')) {
+            if ($request->has('gender')) {
                 $student->gender = $request->input('gender');
             }
             $student->profile_picture = $request->input('profile_picture');
@@ -197,22 +197,28 @@ class StudentController extends Controller
     /**
      * Display the specified student.
      */
-    public function show(Student $student)
+    public function show($id)
     {
+        $student = Student::find($id);
+        if (!$student) {
+            return response()->json(['message' => 'Student not found'], 404);
+        }
+        // Optionally, you can include related data like guardians
+        // $student->load('guardians');
         return response()->json($student);
     }
 
     /**
      * Update the specified student in storage.
      */
-    public function update(Request $request, Student $student)
+    public function update($id, Request $request)
     {
         // Validate incoming data
-        $data = $request->validate([
+        $request->validate([
             'firstname' => 'nullable|string|max:255',
             'lastname' => 'nullable|string|max:255',
-            'email' => 'nullable|email|unique:students,email,' . $student->id,
-            'phone' => 'nullable|string|unique:students,phone,' . $student->id,
+            'email' => 'nullable|email|unique:students,email,',
+            'phone' => 'nullable|string|unique:students,phone,',
             'password' => 'nullable|string|min:6',
             'gender' => 'nullable|in:male,female,others',
             'profile_picture' => 'nullable|string',
@@ -222,23 +228,43 @@ class StudentController extends Controller
             'department' => 'nullable|string',
             'guardians_ids' => 'nullable|array',
         ]);
-
-        try {
-            // Update student
-            $student->update($data);
-            return response()->json(
-                [
-                    'student' => $student,
-                    'message' => 'Student updated successfully',
-                ],
-                200
-            );
-        } catch (\Exception $error) {
-            return response()->json([
-                'errors' => $error->getMessage(),
-                'message' => 'An error occurred while updating the student.',
-            ], 500);
+        $student = Student::find($id);
+        if (!$student) {
+            return response()->json(['message' => 'Student not found'], 404);
         }
+        // Update all fields if they are provided
+        $student->update([
+            'firstname' => $request->input('firstname'),
+            'lastname' => $request->input('lastname'),
+            'email' => $request->input('email'),
+            'phone' => $request->input('phone'),
+            'password' => $request->input('password'),
+            'gender' => $request->input('gender'),
+            'profile_picture' => $request->input('profile_picture'),
+            'date_of_birth' => $request->input('date_of_birth'),
+            'location' => $request->input('location'),
+            'home_address' => $request->input('home_address'),
+            'department' => $request->input('department'),
+            'guardians_ids' => $request->input('guardians_ids'),
+        ]);
+
+
+        // try {
+        //     // Update student
+        //     $student->update($data);
+        //     return response()->json(
+        //         [
+        //             'student' => $student,
+        //             'message' => 'Student updated successfully',
+        //         ],
+        //         200
+        //     );
+        // } catch (\Exception $error) {
+        //     return response()->json([
+        //         'errors' => $error->getMessage(),
+        //         'message' => 'An error occurred while updating the student.',
+        //     ], 500);
+        // }
     }
 
     /**
