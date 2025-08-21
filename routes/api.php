@@ -4,6 +4,7 @@
 
 
 use App\Http\Controllers\CourseController;
+use App\Http\Controllers\GoogleAuthController;
 use App\Http\Controllers\SubjectController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -25,6 +26,8 @@ Route::prefix('students')->group(function () {
     Route::post('login', [StudentController::class, 'login']); // Login student
     Route::post('/enroll', [StudentController::class, 'enroll']); //student enroll in a course
 
+
+    Route::get('/auth/google', [GoogleAuthController::class, 'redirectToGoogleStudent']);  //student login or register using google auth
 });
 
 // Guardian API Routes
@@ -36,7 +39,12 @@ Route::prefix('guardians')->group(function () {
     Route::put('/{guardian}', [GuardianController::class, 'update']); // Update guardian
     Route::delete('/{guardian}', [GuardianController::class, 'destroy']); // Delete guardian
     Route::post('/login', [GuardianController::class, 'login']);      // Guardian login
+
+    Route::get('/auth/google', [GoogleAuthController::class, 'redirectToGoogleGuardian']);  //gurdian login or register using google auth(redirect to google)
 });
+
+// student and guardian Shared google callback(callback url in google console need to be changed to api for this to work)
+Route::get('/auth/google/callback', [GoogleAuthController::class, 'handleGoogleCallback']);
 
 // Staff API Routes
 Route::prefix('staffs')->group(function () {

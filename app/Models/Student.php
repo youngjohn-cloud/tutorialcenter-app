@@ -26,7 +26,8 @@ class Student extends Authenticatable
         'home_address',
         'department',
         'guardians_ids',
-        'role'
+        'provider',
+        'google_id',
     ];
 
     protected $hidden = [

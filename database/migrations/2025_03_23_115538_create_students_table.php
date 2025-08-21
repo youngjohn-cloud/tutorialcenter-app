@@ -29,6 +29,10 @@ return new class extends Migration {
             $table->string('verification_code')->nullable();
             $table->boolean('verified')->default(false);
 
+            //google login
+            $table->string('google_id')->nullable()->unique();
+            $table->string('provider')->nullable();
+
             //status
             $table->enum('status', ['online', 'away', 'offline', 'disabled'])->default('offline');
             $table->text('location')->nullable();

@@ -29,7 +29,8 @@ class Guardian extends Authenticatable
         'location',
         'home_address',
         'students_ids',
-        'role'
+        'provider',
+        'google_id',
     ];
 
     protected $hidden = [
