@@ -18,7 +18,7 @@ Route::prefix('students')->group(function () {
     Route::get('/', [StudentController::class, 'index']); // List all students
     Route::post('/register', [StudentController::class, 'store']); // Create a new student
     Route::post('/verify', [StudentController::class, 'verify']); // Email Verification
-    Route::get('/show/{student}', [StudentController::class, 'show']); // Show specific student
+    Route::get('{student}', [StudentController::class, 'show']); // Show specific student
     Route::put('{student}', [StudentController::class, 'update']); // Update a student
     Route::delete('{student}', [StudentController::class, 'destroy']); // Delete a student
 

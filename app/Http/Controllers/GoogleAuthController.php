@@ -6,7 +6,7 @@ use App\Models\Guardian;
 use App\Models\Student;
 use Illuminate\Http\Request;
 use Laravel\Socialite\Facades\Socialite;
-use Str;
+use Illuminate\Support\Str;
 
 class GoogleAuthController extends Controller
 {
@@ -60,10 +60,10 @@ class GoogleAuthController extends Controller
                         'profile_picture' => $googleUser->avatar,
                     ]
                 );
-    
+
                 return redirect()->away("https://tutorialcenter.vercel.app/parent-dashboard");
             }
-    
+
             // default = student
             $user = Student::updateOrCreate(
                 ['email' => $googleUser->getEmail()],
@@ -78,7 +78,7 @@ class GoogleAuthController extends Controller
                     'profile_picture' => $googleUser->avatar,
                 ]
             );
-    
+
             return redirect()->away("https://tutorialcenter.vercel.app/dashboard");
         } catch (\Exception $e) {
             return response()->json(['message' => 'An error occurred during login', 'error' => $e->getMessage()], 500);
