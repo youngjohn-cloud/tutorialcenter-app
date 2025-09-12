@@ -5,6 +5,7 @@
 
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\GoogleAuthController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\SubjectController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -84,5 +85,8 @@ Route::prefix('subjects')->group(function () {
     Route::put('/{id}', [SubjectController::class, 'update']);    // Update subject
     Route::delete('/{id}', [SubjectController::class, 'destroy']); // Delete subject
 });
+
+//payment route
+Route::post('/payments', [PaymentController::class, 'store']);
 
 
