@@ -5,6 +5,7 @@
 
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\GoogleAuthController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\SubjectController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -21,6 +22,7 @@ Route::prefix('students')->group(function () {
     Route::get('{student}', [StudentController::class, 'show']); // Show specific student
     Route::put('{student}', [StudentController::class, 'update']); // Update a student
     Route::delete('{student}', [StudentController::class, 'destroy']); // Delete a student
+    Route::patch('/resend-code', [StudentController::class, 'resendCode']); //resend verification code
 
 
     Route::post('login', [StudentController::class, 'login']); // Login student
@@ -39,6 +41,7 @@ Route::prefix('guardians')->group(function () {
     Route::put('/{guardian}', [GuardianController::class, 'update']); // Update guardian
     Route::delete('/{guardian}', [GuardianController::class, 'destroy']); // Delete guardian
     Route::post('/login', [GuardianController::class, 'login']);      // Guardian login
+    Route::patch('/resend-code', [GuardianController::class, 'resendCode']); //resend verification code
 
     Route::get('/auth/google', [GoogleAuthController::class, 'redirectToGoogleGuardian']);  //gurdian login or register using google auth(redirect to google)
 });
@@ -82,5 +85,8 @@ Route::prefix('subjects')->group(function () {
     Route::put('/{id}', [SubjectController::class, 'update']);    // Update subject
     Route::delete('/{id}', [SubjectController::class, 'destroy']); // Delete subject
 });
+
+//payment route
+Route::post('/payments', [PaymentController::class, 'store']);
 
 

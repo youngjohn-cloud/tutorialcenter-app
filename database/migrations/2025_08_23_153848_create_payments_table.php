@@ -18,10 +18,10 @@ return new class extends Migration
             $table->enum('payment_method', ['bank transfer', 'card', 'paystack']);
             $table->enum('payment_status', ['pending', 'completed', 'failed', 'refunded']);
             $table->decimal('amount', 10, 2);
-            $table->dateTime('payment_date');
+            $table->dateTime('payment_date')->nullable();
             $table->enum('duration', ['monthly', 'quarterly', 'half_year', 'annually']);
-            $table->dateTime('due_date');
-            $table->string('reference_number')->unique();
+            $table->dateTime('due_date')->nullable();
+            $table->string('reference_number');
             $table->softDeletes(); // deleted_at
             $table->timestamps(); // created_at, updated_at
 
