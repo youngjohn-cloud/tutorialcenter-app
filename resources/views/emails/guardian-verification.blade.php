@@ -25,7 +25,7 @@
 
                 <p style="font-size: 16px; color: #555555; margin-bottom: 10px;">
                     and you can click on this link to go the verification page:
-                    <a href="https://tcapi.roncloud.com.ng/email-verification?identifier={{ $guardian->email }}&role=true">Verify Link</a>
+                    <a href="{{ env('FRONTEND_URL') }}/email-verification?identifier={{ $guardian->email }}&role=true">Verify Link</a>
                 </p>
 
                 <p style="font-size: 14px; color: #999999; margin-top: 20px;">
