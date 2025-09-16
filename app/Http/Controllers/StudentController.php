@@ -288,4 +288,65 @@ class StudentController extends Controller
             return response()->json(['message' => 'An error occurred during login', 'error' => $e->getMessage()], 500);
         }
     }
+
+    // resending email verification code
+    public function resendCode(Request $request, TermiiService $termii)
+    {
+        $email = $request->input('email');
+        $phone = $request->input('phone');
+
+        // Make sure at least one is provided
+        if (!$email && !$phone) {
+            return response()->json([
+                'message' => 'Provide at least email or phone number'
+            ], 422);
+        }
+
+        // Find student by email or phone
+        if ($email) {
+            $student = Student::where('email', $email)->first();
+        } elseif ($phone) {
+            $student = Student::where('phone', $phone)->first();
+        } else {
+            $student = null;
+        }
+
+        if (!$student) {
+            return response()->json([
+                'message' => 'User not found'
+            ], 404);
+        }
+
+        if ($student->verified) {
+            return response()->json([
+                'message' => 'User already verified'
+            ], 400);
+        }
+
+        // Generate new verification code
+        $verification_code = rand(100000, 999999);
+
+        $student->update([
+            'verification_code' => $verification_code,
+        ]);
+
+        // Send via email if available
+        if ($student->email) {
+            Mail::to($student->email)->send(new StudentEmailVerification($student));
+        }
+
+        // Send via phone if available
+        if ($student->phone) {
+            $smsResponse = $termii->sendSms($student->phone, "Your verification code is $verification_code");
+
+            \Log::info('Termii SMS response', [
+                'phone' => $student->phone,
+                'response' => $smsResponse
+            ]);
+        }
+
+        return response()->json([
+            'message' => 'Verification code resent successfully'
+        ]);
+    }
 }

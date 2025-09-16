@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\GuardianEmailVerification;
 use App\Models\Guardian;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -220,4 +221,62 @@ class GuardianController extends Controller
 
         return response()->json(['message' => 'Invalid email or password'], 401);
     }
+
+
+    // resending email verification code
+    public function resendCode(Request $request) {
+        $email = $request->input('email');
+        $phone = $request->input('phone');
+
+        // Make sure at least one is provided
+        if (!$email && !$phone) {
+            return response()->json([
+                'message' => 'Provide at least email or phone number'
+            ], 422);
+        }
+
+        // Find guardian by email or phone
+        if ($email) {
+            $guardian = Guardian::where('email', $email)->first();
+        } elseif ($phone) {
+            $guardian = Guardian::where('phone', $phone)->first();
+        } else {
+            $guardian = null;
+        }
+
+        if (!$guardian) {
+            return response()->json([
+                'message' => 'User not found'
+            ], 404);
+        }
+
+        if ($guardian->verified) {
+            return response()->json([
+                'message' => 'User already verified'
+            ], 400);
+        }
+
+        // Generate new verification code
+        $verification_code = rand(100000, 999999);
+
+        $guardian->update([
+            'verification_code' => $verification_code,
+        ]);
+
+        // Send via email if available
+        if ($guardian->email) {
+            Mail::to($guardian->email)->send(new GuardianEmailVerification($guardian));
+        }
+
+        // Send via phone if available
+        if ($guardian->phone) {
+            // resend code to phone number logics here
+        }
+
+        return response()->json([
+            'message' => 'Verification code resent successfully'
+        ]);
+    }
+
 }
+
