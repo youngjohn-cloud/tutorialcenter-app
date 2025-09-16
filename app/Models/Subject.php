@@ -13,7 +13,7 @@ class Subject extends Model
         'name',
         'slug',
         'description',
-        'sections_ids',
+        'courses_ids',
         'departments',
         'created_by',
         'status',
@@ -21,7 +21,7 @@ class Subject extends Model
     ];
 
     protected $casts = [
-        'sections_ids' => 'array',
+        'courses_ids' => 'array',
         'tutors_assignees' => 'array',
         'departments' => 'array',
     ];
