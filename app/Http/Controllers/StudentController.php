@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Services\TermiiService;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class StudentController extends Controller
@@ -339,7 +340,7 @@ class StudentController extends Controller
         if ($student->phone) {
             $smsResponse = $termii->sendSms($student->phone, "Your verification code is $verification_code");
 
-            \Log::info('Termii SMS response', [
+            Log::info('Termii SMS response', [
                 'phone' => $student->phone,
                 'response' => $smsResponse
             ]);

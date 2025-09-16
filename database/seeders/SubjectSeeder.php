@@ -351,7 +351,7 @@ class SubjectSeeder extends Seeder
                 'description' => $subject['description'],
                 'courses_ids' => json_encode($subject['courses_ids']),
                 'departments' => json_encode($subject['departments']),
-                'created_by' => rand(1,10),
+                'created_by' => rand(1, 10),
                 'status' => 'published'
             ]);
         }

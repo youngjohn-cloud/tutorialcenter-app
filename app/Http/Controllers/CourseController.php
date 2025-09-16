@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Course;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage as FacadesStorage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
-use Storage;
 
 class CourseController extends Controller
 {
@@ -38,7 +38,7 @@ class CourseController extends Controller
                 'errors' => $validator->errors()
             ], 422);
         }
-        
+
         // Create the course
         try {
             $existingCourse = Course::where('name', $request->name)->first();
@@ -47,7 +47,7 @@ class CourseController extends Controller
                     'message' => "Course with this $request->name already exists.",
                 ], 422);
             }
-            
+
             // Handle course image upload
             if ($request->hasFile('course_image')) {
                 $courseImagePath = $request->file('course_image')->store('courses', 'public');
@@ -102,8 +102,8 @@ class CourseController extends Controller
 
         if ($request->hasFile('course_image')) {
             // Delete old image from storage if it exists
-            if ($course->course_image && Storage::disk('public')->exists($course->course_image)) {
-                Storage::disk('public')->delete($course->course_image);
+            if ($course->course_image && FacadesStorage::disk('public')->exists($course->course_image)) {
+                FacadesStorage::disk('public')->delete($course->course_image);
             }
 
             // Store new image

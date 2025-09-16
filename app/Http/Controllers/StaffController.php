@@ -13,6 +13,11 @@ use Illuminate\Support\Facades\Validator;
 
 class StaffController extends Controller
 {
+    public function index()
+    {
+        $staff = Staff::all();
+        return response()->json($staff);
+    }
     /**
      * Store a newly created staff in storage.
      */
