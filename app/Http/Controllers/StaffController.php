@@ -165,6 +165,7 @@ class StaffController extends Controller
     // }
 
 
+    // Update Staff Info
     public function update(Request $request, Staff $staff)
     {
         // Validate incoming data
@@ -196,5 +197,13 @@ class StaffController extends Controller
                 'message' => 'An error occurred while updating the student.',
             ], 500);
         }
+    }
+
+    // Show staffs
+    public function show() {
+        $staffs = Staff::all();
+        return response()->json([
+            'staffs' => $staffs
+        ], 200);
     }
 }
