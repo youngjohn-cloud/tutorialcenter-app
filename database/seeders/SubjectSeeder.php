@@ -402,8 +402,8 @@ class SubjectSeeder extends Seeder
                 'name' => $subject['name'],
                 'slug' => Str::slug($subject['slug']),
                 'description' => $subject['description'],
-                'courses_ids' => json_encode($subject['courses_ids']),
-                'departments' => json_encode($subject['departments']),
+                'courses_ids' => $subject['courses_ids'],
+                'departments' => $subject['departments'],
                 'created_by' => 1,
                 'status' => 'published'
             ]);
