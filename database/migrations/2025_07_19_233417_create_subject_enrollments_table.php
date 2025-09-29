@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('student_id')->constrained('students')->onDelete('cascade');
             $table->foreignId('subject_id')->constrained('subjects')->onDelete('cascade'); 
+            $table->foreignId('enrollment_id')->constrained('enrollments')->onDelete('cascade'); 
             $table->decimal('progress', 5,2)->nullable();
 
             $table->softDeletes();
