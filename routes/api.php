@@ -4,10 +4,11 @@
 
 
 use App\Http\Controllers\CourseController;
+use App\Http\Controllers\EnrollmentController;
 use App\Http\Controllers\GoogleAuthController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\SubjectController;
-use Illuminate\Http\Request;
+use App\Http\Controllers\SubjectEnrollmentController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\StudentController;
@@ -88,3 +89,6 @@ Route::prefix('subjects')->group(function () {
 
 //payment route
 Route::post('/payments', [PaymentController::class, 'store']);
+
+Route::patch('/subject-enrollments/{id}', [SubjectEnrollmentController::class, 'update']);
+Route::post('/enrollments', [EnrollmentController::class, 'store']);
