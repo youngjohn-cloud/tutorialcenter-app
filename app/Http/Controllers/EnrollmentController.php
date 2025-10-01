@@ -16,7 +16,7 @@ class EnrollmentController extends Controller
             'course_id'  => 'required|exists:courses,id',
             'end_date'   =>   'required|in:monthly,quarterly,half_year,annually',
             'subjects'   => 'required|array',
-            'subjects.*.subject_id' => 'required|exists:subjects,id',
+            'subjects.*.id' => 'required|exists:subjects,id',
             'subjects.*.progress'   => 'nullable|numeric|min:0|max:100',
         ]);
 
