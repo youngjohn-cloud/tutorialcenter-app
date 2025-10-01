@@ -18,7 +18,7 @@ class EnrollmentObserver
         foreach ($subjects as $subj) {
             SubjectEnrollment::create([
                 'student_id'    => $enrollment->student_id,
-                'subject_id'    => $subj['subject_id'],
+                'subject_id'    => $subj['id'],
                 'enrollment_id' => $enrollment->id,
                 'progress'      => $subj['progress'] ?? 0,
             ]);
