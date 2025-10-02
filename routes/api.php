@@ -6,6 +6,7 @@
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\EnrollmentController;
 use App\Http\Controllers\GoogleAuthController;
+use App\Http\Controllers\LessonController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\SubjectController;
 use App\Http\Controllers\SubjectEnrollmentController;
@@ -55,21 +56,18 @@ Route::get('/auth/google/callback', [GoogleAuthController::class, 'handleGoogleC
 // Staff API Routes
 Route::prefix('staffs')->group(function () {
     Route::get('/', [StaffController::class, 'index']); // List all staff
-    Route::post('/register', [StaffController::class, 'store']); // Create a new staff
     Route::post('/verify', [StaffController::class, 'verify']); // Email Verification
-    Route::get('/{staff}', [StaffController::class, 'show']); // Show specific staff
-    Route::put('/{staff}', [StaffController::class, 'update']); // Update a staff
-    Route::delete('/{staff}', [StaffController::class, 'destroy']); // Delete a staff
     Route::post('/login', [StaffController::class, 'login']); //staff login
-
-    Route::middleware('auth:sanctum')->group(function () {
-        // Route::post('/register', [StaffController::class, 'store']); // Create a new staff
-
+    Route::get('/{staff}', [StaffController::class, 'show']); // Show specific staff
+    // Route::post('/register', [StaffController::class, 'store']); // Create a new staff
+    
+    Route::middleware(['auth:sanctum', 'type.staff', 'staff.role:admin'])->group(function () {
+        Route::post('/register', [StaffController::class, 'store']); // Create a new staff
+        Route::put('/{staff}', [StaffController::class, 'update']); // Update a staff
+        Route::delete('/{staff}', [StaffController::class, 'destroy']); // Delete a staff
+        Route::post('/createclass', [CourseController::class, 'store']); // Create course route 
     });
-    // Section Routes
-    Route::post('/createclass', [CourseController::class, 'store']);
 });
-
 
 // Course (Classes) API Routes 
 Route::prefix('courses')->group(function () {
@@ -102,6 +100,7 @@ Route::prefix('subjects')->group(function () {
     });
 });
 
+// Module API Routes
 Route::prefix('modules')->group(function () {
     Route::get('/', [ModuleController::class, 'index']); // List all modules
     Route::get('/{id}', [ModuleController::class, 'show']); // Show module by ID
@@ -113,9 +112,22 @@ Route::prefix('modules')->group(function () {
         Route::delete('/{id}', [ModuleController::class, 'destroy']); // Delete module
     });
 
-    // Optional helper routes
-    Route::get('/course/{courseId}', [ModuleController::class, 'forCourse']); // Modules for a course
-    Route::get('/subject/{subjectId}', [ModuleController::class, 'forSubject']); // Modules for a subject
+    // // Optional helper routes
+    // Route::get('/course/{courseId}', [ModuleController::class, 'forCourse']); // Modules for a course
+    // Route::get('/subject/{subjectId}', [ModuleController::class, 'forSubject']); // Modules for a subject
+});
+
+// Lesson API Routes
+Route::prefix('lessons')->group(function () {
+    Route::get('/', [LessonController::class, 'index']); // List all modules
+    Route::get('/{id}', [LessonController::class, 'show']); // Show module by ID
+
+    // Admin-only module management
+    Route::middleware(['auth:sanctum', 'type.staff', 'staff.role:admin'])->group(function () {
+        Route::post('/', [LessonController::class, 'store']); // Create module
+        Route::put('/{id}', [LessonController::class, 'update']); // Update module
+        Route::delete('/{id}', [LessonController::class, 'destroy']); // Delete module
+    });
 });
 
 //payment route

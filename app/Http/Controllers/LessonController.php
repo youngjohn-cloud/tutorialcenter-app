@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Lesson;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class LessonController extends Controller
 {
@@ -32,29 +33,45 @@ class LessonController extends Controller
     {
         $validated = $request->validate([
             'module_id' => 'required|exists:modules,id',
-            'title' => 'required|string',
+            'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'material_url' => 'nullable|file|mimes:pdf,docs,docx',
-            'video_thumbnail' => 'nullable|image|mimes:jpg,png,jpeg',
-            'video_url' => 'required|video|mimes:ffmpeg,mp4,wav',
+            'material_url' => 'nullable|file|mimes:pdf,doc,docx',
+            'video_thumbnail' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'video_url' => 'required|file|mimes:mp4,mov,avi,mkv,wmv|max:51200',
         ]);
 
-        $validated['uploaded_by'] = Auth::id(); // staff who uploaded
+        $validated['uploaded_by'] = Auth::id();
         $validated['updated_by'] = Auth::id();
-        // determine next order for the given subject_id
+
+        // 🔹 Determine next order within the same module
         $maxOrder = Lesson::where('module_id', $validated['module_id'])->max('order');
         $validated['order'] = ($maxOrder ?? 0) + 1;
-        try {
 
+        try {
+            // 🔹 Handle file uploads
+            if ($request->hasFile('material_url')) {
+                $validated['material_url'] = $request->file('material_url')->store('lessons/materials', 'public');
+            }
+
+            if ($request->hasFile('video_thumbnail')) {
+                $validated['video_thumbnail'] = $request->file('video_thumbnail')->store('lessons/thumbnails', 'public');
+            }
+
+            if ($request->hasFile('video_url')) {
+                $validated['video_url'] = $request->file('video_url')->store('lessons/videos', 'public');
+            }
+
+            // 🔹 Create lesson
             $lesson = Lesson::create($validated);
 
             return response()->json([
                 'message' => 'Lesson created successfully.',
                 'lesson' => $lesson
             ], 201);
+
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Failed to create module.',
+                'message' => 'Failed to create lesson.',
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -76,20 +93,54 @@ class LessonController extends Controller
         $validated = $request->validate([
             'title' => 'sometimes|required|string|max:255',
             'description' => 'nullable|string',
-            'material_url' => 'nullable|string',
-            'video_thumbnail' => 'nullable|string',
-            'video_url' => 'sometimes|required|string',
+            'material_url' => 'nullable|file|mimes:pdf,doc,docx',
+            'video_thumbnail' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'video_url' => 'sometimes|required|file|mimes:mp4,mov,avi,mkv,wmv|max:51200',
             'order' => 'sometimes|required|integer',
         ]);
 
         $validated['updated_by'] = Auth::id();
 
-        $lesson->update($validated);
+        try {
+            // 🔹 Handle material replacement
+            if ($request->hasFile('material_url')) {
+                // Delete old material if exists
+                if ($lesson->material_url && Storage::disk('public')->exists($lesson->material_url)) {
+                    Storage::disk('public')->delete($lesson->material_url);
+                }
+                $validated['material_url'] = $request->file('material_url')->store('lessons/materials', 'public');
+            }
 
-        return response()->json([
-            'message' => 'Lesson updated successfully.',
-            'lesson' => $lesson
-        ]);
+            // 🔹 Handle video thumbnail replacement
+            if ($request->hasFile('video_thumbnail')) {
+                if ($lesson->video_thumbnail && Storage::disk('public')->exists($lesson->video_thumbnail)) {
+                    Storage::disk('public')->delete($lesson->video_thumbnail);
+                }
+                $validated['video_thumbnail'] = $request->file('video_thumbnail')->store('lessons/thumbnails', 'public');
+            }
+
+            // 🔹 Handle video replacement
+            if ($request->hasFile('video_url')) {
+                if ($lesson->video_url && Storage::disk('public')->exists($lesson->video_url)) {
+                    Storage::disk('public')->delete($lesson->video_url);
+                }
+                $validated['video_url'] = $request->file('video_url')->store('lessons/videos', 'public');
+            }
+
+            // 🔹 Update lesson
+            $lesson->update($validated);
+
+            return response()->json([
+                'message' => 'Lesson updated successfully.',
+                'lesson' => $lesson
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to update lesson.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**
