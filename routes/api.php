@@ -60,8 +60,8 @@ Route::prefix('staffs')->group(function () {
     Route::put('/{staff}', [StaffController::class, 'update']); // Update a staff
     Route::delete('/{staff}', [StaffController::class, 'destroy']); // Delete a staff
     Route::post('/login', [StaffController::class, 'login']); //staff login
-    
-    Route::middleware('auth:sanctum')->group(function (){
+
+    Route::middleware('auth:sanctum')->group(function () {
         // Route::post('/register', [StaffController::class, 'store']); // Create a new staff
 
     });
@@ -72,20 +72,32 @@ Route::prefix('staffs')->group(function () {
 
 // Course (Classes) API Routes 
 Route::prefix('courses')->group(function () {
-    Route::get('/', [CourseController::class, 'index']);         // List all active course
-    Route::post('/', [CourseController::class, 'store']);        // Create courses
-    Route::get('/{id}', [CourseController::class, 'show']);      // Show course by ID or slug
-    Route::put('/{id}', [CourseController::class, 'update']);    // Update course
-    Route::delete('/{id}', [CourseController::class, 'destroy']); // Delete course
+    Route::get('/', [CourseController::class, 'index']); // List all active course
+    Route::get('/{id}', [CourseController::class, 'show']); // Show course by ID or slug
+    /**
+     * Route only accessible by admin for subjects
+     */
+    Route::middleware(['auth:sanctum', 'type.staff', 'staff.role:admin'])->group(function () {
+        Route::post('/', [CourseController::class, 'store']); // Create courses
+        Route::put('/{id}', [CourseController::class, 'update']); // Update course
+        Route::delete('/{id}', [CourseController::class, 'destroy']); // Delete course
+    });
 });
 
 // Subject API Routes
 Route::prefix('subjects')->group(function () {
-    Route::get('/', [SubjectController::class, 'index']);         // List all published subjects
-    Route::post('/', [SubjectController::class, 'store'])->middleware(['auth:sanctum', 'type.staff', 'staff.role:staff']);        // Create subject
-    Route::get('/{id}', [SubjectController::class, 'show']);      // Show published subject by ID
-    Route::put('/{id}', [SubjectController::class, 'update']);    // Update subject
-    Route::delete('/{id}', [SubjectController::class, 'destroy']); // Delete subject
+    Route::get('/', [SubjectController::class, 'index']); // List all published subjects
+
+    Route::get('/{id}', [SubjectController::class, 'show']); // Show published subject by ID
+
+    /**
+     * Route only accessible by admin for subjects
+     */
+    Route::middleware(['auth:sanctum', 'type.staff', 'staff.role:admin'])->group(function () {
+        Route::post('/', [SubjectController::class, 'store']); // Create subject
+        Route::put('/{id}', [SubjectController::class, 'update']); // Update subject
+        Route::delete('/{id}', [SubjectController::class, 'destroy']); // Delete subject
+    });
 });
 
 //payment route
