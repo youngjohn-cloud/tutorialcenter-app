@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('subject_id')->constrained('subjects')->onDelete('cascade');
             $table->string('title');
-            $table->longText('description');
-            $table->integer('order');
+            $table->longText('description')->nullable();
+            $table->integer('order')->nullable();
             $table->softDeletes();
             $table->timestamps();
         });

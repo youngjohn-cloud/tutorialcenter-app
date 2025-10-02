@@ -14,6 +14,7 @@ use App\Http\Controllers\StaffController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\SectionController;
 use App\Http\Controllers\GuardianController;
+use App\Http\Controllers\ModuleController;
 
 // Student API Routes
 Route::prefix('students')->group(function () {
@@ -74,7 +75,7 @@ Route::prefix('staffs')->group(function () {
 Route::prefix('courses')->group(function () {
     Route::get('/', [CourseController::class, 'index']); // List all active course
     Route::get('/{id}', [CourseController::class, 'show']); // Show course by ID or slug
-    
+
     /**
      * Route only accessible by admin for subjects
      */
@@ -99,6 +100,22 @@ Route::prefix('subjects')->group(function () {
         Route::put('/{id}', [SubjectController::class, 'update']); // Update subject
         Route::delete('/{id}', [SubjectController::class, 'destroy']); // Delete subject
     });
+});
+
+Route::prefix('modules')->group(function () {
+    Route::get('/', [ModuleController::class, 'index']); // List all modules
+    Route::get('/{id}', [ModuleController::class, 'show']); // Show module by ID
+
+    // Admin-only module management
+    Route::middleware(['auth:sanctum', 'type.staff', 'staff.role:admin'])->group(function () {
+        Route::post('/', [ModuleController::class, 'store']); // Create module
+        Route::put('/{id}', [ModuleController::class, 'update']); // Update module
+        Route::delete('/{id}', [ModuleController::class, 'destroy']); // Delete module
+    });
+
+    // Optional helper routes
+    Route::get('/course/{courseId}', [ModuleController::class, 'forCourse']); // Modules for a course
+    Route::get('/subject/{subjectId}', [ModuleController::class, 'forSubject']); // Modules for a subject
 });
 
 //payment route
