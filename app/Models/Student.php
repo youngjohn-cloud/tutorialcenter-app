@@ -50,4 +50,9 @@ class Student extends Authenticatable
             $this->attributes['password'] = bcrypt($value);
         }
     }
+
+    public function enrollments()
+    {
+        return $this->hasMany(Enrollment::class);
+    }
 }

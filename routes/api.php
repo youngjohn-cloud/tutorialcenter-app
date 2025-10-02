@@ -24,6 +24,7 @@ Route::prefix('students')->group(function () {
     Route::put('{student}', [StudentController::class, 'update']); // Update a student
     Route::delete('{student}', [StudentController::class, 'destroy']); // Delete a student
     Route::patch('/resend-code', [StudentController::class, 'resendCode']); //resend verification code
+    Route::get('/{id}/courses-subjects', [StudentController::class, 'getStudentCoursesAndSubjects']); // gets student enrolled courses and subjects
 
 
     Route::post('login', [StudentController::class, 'login']); // Login student
