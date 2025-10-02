@@ -58,7 +58,7 @@ class StaffController extends Controller
             $rand = rand(1000, 9999);
             $staff_id = 'TC' . $year . $rand;
 
-            $staff = Auth::guard('staff')->user();
+            $staff = Auth::guard('staffs')->user();
 
             $staff = new Staff;
             $staff->staff_id = $staff_id;
