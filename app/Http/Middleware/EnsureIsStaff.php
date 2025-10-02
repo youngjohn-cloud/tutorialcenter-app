@@ -4,17 +4,20 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
 
 class EnsureIsStaff
 {
-    /**
-     * Handle an incoming request.
-     *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
-     */
-    public function handle(Request $request, Closure $next): Response
+    public function handle(Request $request, Closure $next)
     {
-        return $next($request);
+        $user = auth()->user();
+
+        // Check if authenticated user is a staff
+        if (!$user || !($user instanceof \App\Models\Staff)) {
+            return response()->json([
+                'message' => 'Unauthorized. Staff access only.'
+            ], 403);
+        }
+
+        return $next($request); // ✅ Pass request to controller
     }
 }

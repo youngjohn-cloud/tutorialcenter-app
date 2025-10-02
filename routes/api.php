@@ -81,7 +81,7 @@ Route::prefix('courses')->group(function () {
 // Subject API Routes
 Route::prefix('subjects')->group(function () {
     Route::get('/', [SubjectController::class, 'index']);         // List all published subjects
-    Route::post('/', [SubjectController::class, 'store']);        // Create subject
+    Route::post('/', [SubjectController::class, 'store'])->middleware(['auth:sanctum', 'type.staff', 'staff.role:staff']);        // Create subject
     Route::get('/{id}', [SubjectController::class, 'show']);      // Show published subject by ID
     Route::put('/{id}', [SubjectController::class, 'update']);    // Update subject
     Route::delete('/{id}', [SubjectController::class, 'destroy']); // Delete subject
