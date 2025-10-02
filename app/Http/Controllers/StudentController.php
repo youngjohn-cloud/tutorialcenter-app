@@ -352,8 +352,47 @@ class StudentController extends Controller
             'message' => 'Verification code resent successfully'
         ]);
     }
-    
-    
+
+
+    //get courses and subjects student enrolled for
+    public function getStudentCoursesAndSubjects($studentId)
+    {
+        $student = Student::select('id', 'firstname', 'lastname')
+            ->with([
+                'enrollments.course:id,name',
+                'enrollments.subjectEnrollments.subject:id,name'
+            ])
+            ->find($studentId);
+
+        //gives an error message if student id passed is not existing
+        if (!$student) {
+            return response()->json([
+                'message' => 'student does not exist'
+            ], 404);
+        }
+
+        // Transform structure
+        $courses = $student->enrollments->map(function ($enrollment) {
+            return [
+                'id' => $enrollment->course->id,
+                'name' => $enrollment->course->name,
+                'subjects' => $enrollment->subjectEnrollments->map(function ($se) {
+                    return [
+                        'id' => $se->subject->id,
+                        'name' => $se->subject->name,
+                        'progress' => $se->progress
+                    ];
+                })->values()
+            ];
+        })->values();
+
+        return response()->json([
+            'id' => $student->id,
+            'firstname' => $student->firstname,
+            'lastname' => $student->lastname,
+            'courses' => $courses
+        ], 200);
+    }
 
 }
 
