@@ -74,6 +74,7 @@ Route::prefix('staffs')->group(function () {
 Route::prefix('courses')->group(function () {
     Route::get('/', [CourseController::class, 'index']); // List all active course
     Route::get('/{id}', [CourseController::class, 'show']); // Show course by ID or slug
+    
     /**
      * Route only accessible by admin for subjects
      */
