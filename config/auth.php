@@ -35,9 +35,9 @@ return [
             'provider' => 'guardians',
         ],
 
-        'staffs' => [
-            'driver' => 'sanctum',
-            // 'driver' => 'session',
+        'staff' => [
+            // 'driver' => 'sanctum',
+            'driver' => 'session',
             'provider' => 'staffs',
         ],
     ],
