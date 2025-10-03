@@ -24,7 +24,7 @@ class StudentController extends Controller
             'email' => 'nullable|email|unique:students,email',
             'phone' => 'nullable|string|unique:students,phone',
             'password' => 'required|string|min:8',
-            'gender' => 'nullable|in:Male,Female,Others',
+            'gender' => 'nullable|string|in:Male,Female,Others',
             'profile_picture' => 'nullable|string',
             'date_of_birth' => 'nullable|date',
             'location' => 'nullable|string',

@@ -57,31 +57,55 @@ Route::get('/auth/google/callback', [GoogleAuthController::class, 'handleGoogleC
 Route::prefix('staffs')->group(function () {
     Route::get('/', [StaffController::class, 'index']); // List all staff
     Route::post('/verify', [StaffController::class, 'verify']); // Email Verification
-    Route::post('/login', [StaffController::class, 'login']); //staff login
+    Route::post('/login', [StaffController::class, 'login']); // Staff login
     Route::get('/{staff}', [StaffController::class, 'show']); // Show specific staff
-    // Route::post('/register', [StaffController::class, 'store']); // Create a new staff
-    
-    Route::middleware(['auth:sanctum', 'type.staff', 'staff.role:admin'])->group(function () {
-        Route::post('/register', [StaffController::class, 'store']); // Create a new staff
-        Route::put('/{staff}', [StaffController::class, 'update']); // Update a staff
-        Route::delete('/{staff}', [StaffController::class, 'destroy']); // Delete a staff
-        Route::post('/createclass', [CourseController::class, 'store']); // Create course route 
+
+    // Forgot & Change Password (open/public)
+    Route::post('/forgot-password', [StaffController::class, 'forgotPassword']);
+    Route::post('/change-password', [StaffController::class, 'changePassword']);
+
+    // Protected routes (only for authenticated staffs)
+    Route::middleware(['auth:sanctum', 'type.staff'])->group(function () {
+        Route::post('/logout', [StaffController::class, 'logout']); // Logout
+
+        // Admin-only routes
+        Route::middleware(['staff.role:admin'])->group(function () {
+            Route::post('/register', [StaffController::class, 'store']); // Create staff
+            Route::put('/{staff}', [StaffController::class, 'update']); // Update staff
+            Route::delete('/{staff}', [StaffController::class, 'destroy']); // Delete staff
+            Route::post('/createclass', [CourseController::class, 'store']); // Create course
+        });
     });
 });
+// Route::prefix('staffs')->group(function () {
+//     Route::get('/', [StaffController::class, 'index']); // List all staff
+//     Route::post('/verify', [StaffController::class, 'verify']); // Email Verification
+//     Route::post('/login', [StaffController::class, 'login']); //staff login
+//     Route::get('/{staff}', [StaffController::class, 'show']); // Show specific staff
+
+//     // Route::post('/register', [StaffController::class, 'store']); // Create a new staff
+
+//     Route::middleware(['auth:sanctum', 'type.staff', 'staff.role:admin'])->group(function () {
+//         Route::post('/register', [StaffController::class, 'store']); // Create a new staff
+//         Route::put('/{staff}', [StaffController::class, 'update']); // Update a staff
+//         Route::delete('/{staff}', [StaffController::class, 'destroy']); // Delete a staff
+//         Route::post('/createclass', [CourseController::class, 'store']); // Create course route 
+//     });
+// });
 
 // Course (Classes) API Routes 
 Route::prefix('courses')->group(function () {
-    Route::get('/', [CourseController::class, 'index']); // List all active course
-    Route::get('/{id}', [CourseController::class, 'show']); // Show course by ID or slug
+Route::get('/', [CourseController::class, 'index']); // List all active course
+Route::get('/{id}', [CourseController::class, 'show']); // Show course by ID or slug
 
-    /**
-     * Route only accessible by admin for subjects
-     */
-    Route::middleware(['auth:sanctum', 'type.staff', 'staff.role:admin'])->group(function () {
-        Route::post('/', [CourseController::class, 'store']); // Create courses
-        Route::put('/{id}', [CourseController::class, 'update']); // Update course
-        Route::delete('/{id}', [CourseController::class, 'destroy']); // Delete course
-    });
+/**
+ * Route only accessible by admin for subjects
+ */
+Route::middleware(['auth:sanctum', 'type.staff', 'staff.role:admin'])->group(function () {
+    Route::post('/', [CourseController::class, 'store']); // Create courses
+    Route::put('/{id}', [CourseController::class, 'update']); // Update course
+    Route::delete('/{id}', [CourseController::class, 'destroy']); // Delete course
+});
 });
 
 // Subject API Routes

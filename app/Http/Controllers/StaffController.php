@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use App\Models\Staff;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Hash;
@@ -52,7 +54,7 @@ class StaffController extends Controller
             $rand = rand(1000, 9999);
             $staff_id = 'TC' . $year . $rand;
 
-            $staff = Auth::guard('staffs')->user();
+            $staff = Auth::guard('staff')->user();
 
             $staff = new Staff;
             $staff->staff_id = $staff_id;
@@ -143,28 +145,6 @@ class StaffController extends Controller
         return response()->json(['message' => 'Invalid email or password'], 401);
     }
 
-    //     $data = $request->validate([
-    //         'identifier' => 'required|email',
-    //         'password' => 'required|string',
-    //     ]);
-    //     return "Hello";
-
-    //     try {
-    //         $staff = Staff::where('email', $data['identifier'])->orWhere('phone', $data['identifier'])->first();
-
-    //         if (!$staff || !Hash::check($data['password'], $staff->password)) {
-    //             return response()->json(['message' => 'Invalid credentials'], 401);
-    //         }
-
-    //         // Generate token or handle authentication as needed
-    //         return response()->json(['message' => 'Login successful', 'staff' => $staff], 200);
-    //     } catch (\Exception $e) {
-    //         return response()->json(['message' => 'An error occurred during login', 'error' => $e->getMessage()], 500);
-    //     }
-
-    // }
-
-
     // Update Staff Info
     public function update(Request $request, Staff $staff)
     {
@@ -206,4 +186,119 @@ class StaffController extends Controller
             'staffs' => $staffs
         ], 200);
     }
+
+    /**
+     * ========================
+     * Forgot Password
+     * ========================
+    */
+    public function forgotPassword(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email|exists:staffs,email',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 400);
+        }
+
+        $staff = Staff::where('email', $request->email)->first();
+
+        // Generate token
+        $token = \Str::random(60);
+
+        // Save token in password_resets table
+        DB::table('password_reset_tokens')->updateOrInsert(
+            ['email' => $staff->email],
+            [
+                'token' => Hash::make($token),
+                'created_at' => Carbon::now(),
+            ]
+        );
+
+        // Send token to email
+        Mail::send('emails.staff-password-reset', [
+            'firstname' => $staff->firstname,
+            'lastname' => $staff->lastname,
+            'reset_link' => env('FRONTEND_URL') . '/reset-password?token=' . $token . '&email=' . $staff->email,
+        ], function ($message) use ($staff) {
+            $message->to($staff->email)->subject('Password Reset Request');
+        });
+
+        return response()->json([
+            'message' => 'Password reset link sent to your email address.',
+        ], 200);
+    }
+
+    /**
+     * ========================
+     * Reset Password
+     * ========================
+     */
+    public function changePassword(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email|exists:staffs,email',
+            'token' => 'required|string',
+            'password' => 'required|string|min:6|confirmed', // expect password + password_confirmation
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 400);
+        }
+        try {
+            $resetRecord = DB::table('password_reset_tokens')->where('email', $request->email)->first();
+    
+            if (!$resetRecord) {
+                return response()->json(['message' => 'Invalid token or email.'], 400);
+            }
+    
+            // Verify token
+            if (!Hash::check($request->token, $resetRecord->token)) {
+                return response()->json(['message' => 'Invalid or expired token.'], 400);
+            }
+    
+            // Update staff password
+            $staff = Staff::where('email', $request->email)->first();
+            $staff->password = Hash::make($request->password);
+            $staff->email_verified_at = now();
+            $staff->save();
+    
+            // Delete reset record
+            DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+    
+            return response()->json([
+                'message' => 'Password reset successfully.',
+                'staff' => $staff
+            ], 200);
+        } catch (\Exception $errors) {
+            return response()->json([
+                'errors' => $errors->getMessage(),
+                'message' => 'Server Error Occurred',  
+            ],500);
+        }
+    }
+
+    /**
+     * ========================
+     * Logout
+     * ========================
+     */
+    public function logout(Request $request)
+    {
+        $staff = Auth::guard('staff')->user();
+
+        if ($staff) {
+            $staff->tokens()->delete(); // revoke all tokens
+            return response()->json([
+                'message' => 'Logout successful.',
+            ], 200);
+        }
+
+        return response()->json([
+            'message' => 'Not authenticated.',
+        ], 401);
+    }
 }
+
+
