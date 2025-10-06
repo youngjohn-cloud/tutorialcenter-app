@@ -2,20 +2,20 @@
 // composer require laravel/sanctum
 // php artisan vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider"
 
-
-use App\Http\Controllers\CourseController;
-use App\Http\Controllers\EnrollmentController;
-use App\Http\Controllers\GoogleAuthController;
-use App\Http\Controllers\LessonController;
-use App\Http\Controllers\PaymentController;
-use App\Http\Controllers\SubjectController;
-use App\Http\Controllers\SubjectEnrollmentController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\StaffController;
-use App\Http\Controllers\StudentController;
-use App\Http\Controllers\SectionController;
-use App\Http\Controllers\GuardianController;
+use App\Http\Controllers\CourseController;
+use App\Http\Controllers\LessonController;
 use App\Http\Controllers\ModuleController;
+use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\SubjectController;
+use App\Http\Controllers\StudentController;
+use App\Http\Controllers\GuardianController;
+use App\Http\Controllers\GoogleAuthController;
+use App\Http\Controllers\EnrollmentController;
+use App\Http\Controllers\MasterclassController;
+use App\Http\Controllers\SubjectEnrollmentController;
+use App\Http\Controllers\MasterclassScheduleController;
 
 // Student API Routes
 Route::prefix('students')->group(function () {
@@ -55,17 +55,27 @@ Route::get('/auth/google/callback', [GoogleAuthController::class, 'handleGoogleC
 
 // Staff API Routes
 Route::prefix('staffs')->group(function () {
+
     Route::get('/', [StaffController::class, 'index']); // List all staff
     Route::post('/verify', [StaffController::class, 'verify']); // Email Verification
-    Route::post('/login', [StaffController::class, 'login']); //staff login
+    Route::post('/login', [StaffController::class, 'login']); // Staff login
     Route::get('/{staff}', [StaffController::class, 'show']); // Show specific staff
-    // Route::post('/register', [StaffController::class, 'store']); // Create a new staff
-    
-    Route::middleware(['auth:sanctum', 'type.staff', 'staff.role:admin'])->group(function () {
-        Route::post('/register', [StaffController::class, 'store']); // Create a new staff
-        Route::put('/{staff}', [StaffController::class, 'update']); // Update a staff
-        Route::delete('/{staff}', [StaffController::class, 'destroy']); // Delete a staff
-        Route::post('/createclass', [CourseController::class, 'store']); // Create course route 
+
+    // Forgot & Change Password (open/public)
+    Route::post('/forgot-password', [StaffController::class, 'forgotPassword']);
+    Route::post('/change-password', [StaffController::class, 'changePassword']);
+
+    // Protected routes (only for authenticated staffs)
+    Route::middleware(['auth:sanctum', 'type.staff'])->group(function () {
+        Route::post('/logout', [StaffController::class, 'logout']); // Logout
+
+        // Admin-only routes
+        Route::middleware(['staff.role:admin'])->group(function () {
+            Route::post('/register', [StaffController::class, 'store']); // Create staff
+            Route::put('/{staff}', [StaffController::class, 'update']); // Update staff
+            Route::delete('/{staff}', [StaffController::class, 'destroy']); // Delete staff
+            Route::post('/createclass', [CourseController::class, 'store']); // Create course
+        });
     });
 });
 
@@ -127,6 +137,28 @@ Route::prefix('lessons')->group(function () {
         Route::post('/', [LessonController::class, 'store']); // Create module
         Route::put('/{id}', [LessonController::class, 'update']); // Update module
         Route::delete('/{id}', [LessonController::class, 'destroy']); // Delete module
+    });
+});
+
+// Masterclass Routes
+Route::prefix('masterclasses')->group(function () {
+    Route::middleware(['auth:sanctum'])->group(function () {
+        Route::get('/', [MasterclassController::class, 'index']);
+        Route::post('/', [MasterclassController::class, 'store']);
+        Route::get('/{id}', [MasterclassController::class, 'show']);
+        Route::put('/{id}', [MasterclassController::class, 'update']);
+        Route::delete('/{id}', [MasterclassController::class, 'destroy']);
+    });    
+});
+
+// Masterclass Schedule Routes
+Route::prefix('masterclass-schedules')->group(function () {
+    Route::middleware(['auth:sanctum'])->group(function () {
+        Route::get('/', [MasterclassScheduleController::class, 'index']);
+        Route::post('/', [MasterclassScheduleController::class, 'store']);
+        Route::get('/{id}', [MasterclassScheduleController::class, 'show']);
+        Route::put('/{id}', [MasterclassScheduleController::class, 'update']);
+        Route::delete('/{id}', [MasterclassScheduleController::class, 'destroy']);
     });
 });
 
