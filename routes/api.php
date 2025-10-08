@@ -26,6 +26,7 @@ Route::prefix('students')->group(function () {
     Route::put('{student}', [StudentController::class, 'update']); // Update a student
     Route::delete('{student}', [StudentController::class, 'destroy']); // Delete a student
     Route::patch('/resend-code', [StudentController::class, 'resendCode']); //resend verification code
+    Route::post('/{id}/profile-picture', [StudentController::class, 'updateProfilePicture']); // update student profile pic.
     Route::get('/{id}/courses-subjects', [StudentController::class, 'getStudentCoursesAndSubjects']); // gets student enrolled courses and subjects
 
 
@@ -162,8 +163,12 @@ Route::prefix('masterclass-schedules')->group(function () {
     });
 });
 
-//payment route
-Route::post('/payments', [PaymentController::class, 'store']);
+//payment routes
+Route::prefix('payments')->group(function () {
+    Route::post('/', [PaymentController::class, 'store']); // create payment
+    Route::get('/{student_id}', [PaymentController::class, 'getStudentPayments']); // get specific student payments
+});
+
 
 Route::patch('/subject-enrollments/{id}', [SubjectEnrollmentController::class, 'update']);
 Route::post('/enrollments', [EnrollmentController::class, 'store']);

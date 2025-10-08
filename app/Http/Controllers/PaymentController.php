@@ -4,9 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Payment;
 use Carbon\Carbon;
-use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
 use function Symfony\Component\Clock\now;
 
 class PaymentController extends Controller
@@ -58,5 +56,29 @@ class PaymentController extends Controller
             'annually'  => Carbon::now()->addYear(),
             default     => Carbon::now(),
         };
+    }
+
+
+    //Get all payments belonging to a specific student.
+
+    public function getStudentPayments($studentId)
+    {
+        try {
+            // Find the student with all related payments and course info
+            $payments = Payment::with('course:id,name') // only load course name + id
+                ->where('student_id', $studentId)
+                ->get(['id', 'course_id', 'payment_method', 'payment_status', 'amount', 'payment_date', 'duration', 'due_date', 'reference_number']);
+
+            return response()->json([
+                'message' => 'Payments retrieved successfully.',
+                'payments' => $payments,
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'An error occurred while fetching payments.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 }
