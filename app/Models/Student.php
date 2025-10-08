@@ -51,8 +51,20 @@ class Student extends Authenticatable
         }
     }
 
+    protected $appends = ['profile_picture_url'];
+
+    public function getProfilePictureUrlAttribute () {
+        return $this->profile_picture ? asset('storage/' . $this->profile_picture) : null;
+    }
+
     public function enrollments()
     {
         return $this->hasMany(Enrollment::class);
     }
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
+    }
+
 }

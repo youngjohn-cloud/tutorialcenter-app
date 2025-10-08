@@ -21,4 +21,15 @@ class Payment extends Model
         'due_date',
         'reference_number',
     ];
+
+    public function student()
+    {
+        return $this->belongsTo(Student::class);
+    }
+
+    public function course()
+    {
+        return $this->belongsTo(Course::class);
+    }
+
 }

@@ -51,4 +51,10 @@ class Course extends Model
     public function getCourseImageUrlAttribute () {
         return $this->course_image ? asset('storage/' . $this->course_image) : null;
     }
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
+    }
+
 }

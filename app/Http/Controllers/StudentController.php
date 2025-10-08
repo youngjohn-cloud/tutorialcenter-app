@@ -9,6 +9,7 @@ use App\Services\TermiiService;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Storage;
 
 class StudentController extends Controller
 {
@@ -359,7 +360,7 @@ class StudentController extends Controller
     {
         $student = Student::select('id', 'firstname', 'lastname')
             ->with([
-                'enrollments.course:id,name',
+                'enrollments.course:id,name,slug',
                 'enrollments.subjectEnrollments.subject:id,name'
             ])
             ->find($studentId);
@@ -371,15 +372,18 @@ class StudentController extends Controller
             ], 404);
         }
 
+
         // Transform structure
         $courses = $student->enrollments->map(function ($enrollment) {
             return [
                 'id' => $enrollment->course->id,
                 'name' => $enrollment->course->name,
+                'slug' => $enrollment->course->slug,
                 'subjects' => $enrollment->subjectEnrollments->map(function ($se) {
                     return [
                         'id' => $se->subject->id,
                         'name' => $se->subject->name,
+                        'slug' => $se->subject->slug,
                         'progress' => $se->progress
                     ];
                 })->values()
@@ -390,7 +394,41 @@ class StudentController extends Controller
             'id' => $student->id,
             'firstname' => $student->firstname,
             'lastname' => $student->lastname,
-            'courses' => $courses
+            'courses' => $courses,
+        ], 200);
+    }
+
+
+    //updates student profile picture
+    public function updateProfilePicture(Request $request, $id)
+    {
+        // Validate the image
+        $request->validate([
+            'profile_picture' => 'required|image|mimes:jpg,jpeg,png,gif|max:2048',
+        ]);
+
+        // Find student or return error
+        $student = Student::find($id);
+        if (!$student) {
+            return response()->json(['message' => 'Student not found'], 404);
+        }
+
+        // Delete old profile picture if exists
+        if ($student->profile_picture && Storage::disk('public')->exists($student->profile_picture)) {
+            Storage::disk('public')->delete($student->profile_picture);
+        }
+
+        // Store new image
+        $path = $request->file('profile_picture')->store('profile_pictures', 'public');
+
+        // Update database
+        $student->profile_picture = $path;
+        $student->save();
+
+        // Return response
+        return response()->json([
+            'message' => 'Profile picture updated successfully',
+            'profile_picture_url' => asset('storage/' . $path),
         ], 200);
     }
 
